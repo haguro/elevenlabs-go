@@ -35,7 +35,7 @@ type Voice struct {
 	Name              string            `json:"name"`
 	PreviewUrl        string            `json:"preview_url"`
 	Samples           []VoiceSample     `json:"samples"`
-	Settings          VoiceSettings     `json:"settings"`
+	Settings          VoiceSettings     `json:"settings,omitempty"`
 	Sharing           VoiceSharing      `json:"sharing"`
 	VoiceId           string            `json:"voice_id"`
 }

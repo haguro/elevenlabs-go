@@ -18,11 +18,11 @@ const (
 	mockTimeout = 60 * time.Second
 )
 
-func testServer(t *testing.T, method string, expectKey bool, queryStr string, statusCode int, respBody []byte, expError error, delay time.Duration) *httptest.Server {
+func testServer(t *testing.T, expMethod string, expectKey bool, queryStr string, statusCode int, respBody []byte, expError error, delay time.Duration) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != method {
-			t.Errorf("Server: expected %q, got %q", method, r.Method)
+		if r.Method != expMethod {
+			t.Errorf("Server: expected %q, got %q", expMethod, r.Method)
 		}
 		if expectKey {
 			gotAPIKey := r.Header.Get("xi-api-key")
@@ -190,7 +190,7 @@ func TestGetModels(t *testing.T) {
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 	models, err := client.GetModels()
 	if err != nil {
-		t.Errorf("Expected no errors from `GetModels`, got error: %q", err)
+		t.Errorf("Expected no errors from `GetModels`, got \"%T\" error: %q", err, err)
 	}
 	if len(models) != 1 {
 		t.Fatalf("Expected unmarshalled response to contain exactly one model, got %d", len(models))
@@ -200,7 +200,257 @@ func TestGetModels(t *testing.T) {
 		t.Fatalf("Failed to unmarshal test respBody: %s", err)
 	}
 	if !reflect.DeepEqual(expModels, models) {
-		t.Errorf("Unexpected model in response: %+v", models[0])
+		t.Errorf("Unexpected Model in response: %+v", models[0])
 	}
+}
 
+func TestGetVoices(t *testing.T) {
+	respBody := `
+{
+  "voices": [
+    {
+      "voice_id": "string",
+      "name": "string",
+      "samples": [
+        {
+          "sample_id": "string",
+          "file_name": "string",
+          "mime_type": "string",
+          "size_bytes": 0,
+          "hash": "string"
+        }
+      ],
+      "category": "string",
+      "fine_tuning": {
+        "model_id": "string",
+        "language": "string",
+        "is_allowed_to_fine_tune": true,
+        "fine_tuning_requested": true,
+        "finetuning_state": "not_started",
+        "verification_attempts": [
+          {
+            "text": "string",
+            "date_unix": 0,
+            "accepted": true,
+            "similarity": 0,
+            "levenshtein_distance": 0,
+            "recording": {
+              "recording_id": "string",
+              "mime_type": "string",
+              "size_bytes": 0,
+              "upload_date_unix": 0,
+              "transcription": "string"
+            }
+          }
+        ],
+        "verification_failures": [
+          "string"
+        ],
+        "verification_attempts_count": 0,
+        "slice_ids": [
+          "string"
+        ]
+      },
+      "labels": {
+        "additionalProp1": "string",
+        "additionalProp2": "string",
+        "additionalProp3": "string"
+      },
+      "description": "string",
+      "preview_url": "string",
+      "available_for_tiers": [
+        "string"
+      ],
+      "settings": {
+        "stability": 0,
+        "similarity_boost": 0
+      },
+      "sharing": {
+        "status": "string",
+        "history_item_sample_id": "string",
+        "original_voice_id": "string",
+        "public_owner_id": "string",
+        "liked_by_count": 0,
+        "cloned_by_count": 0
+      }
+    }
+  ]
+}`
+
+	server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	voices, err := client.GetVoices()
+	if err != nil {
+		t.Errorf("Expected no errors from `GetVoices`, got \"%T\" error: %q", err, err)
+	}
+	if len(voices) != 1 {
+		t.Fatalf("Expected unmarshalled response to contain exactly one model, got %d", len(voices))
+	}
+	var voicesResp elevenlabs.VoicesResponse
+	if err := json.Unmarshal([]byte(respBody), &voicesResp); err != nil {
+		t.Fatalf("Failed to unmarshal test respBody: %s", err)
+	}
+	if !reflect.DeepEqual(voicesResp.Voices, voices) {
+		t.Errorf("Unexpected Voice in response: %+v", voices[0])
+	}
+}
+
+func TestGetDefaultVoiceSettings(t *testing.T) {
+	respBody := `
+{
+  "stability": 1,
+  "similarity_boost": 2
+}`
+
+	server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	vSettings, err := client.GetDefaultVoiceSettings()
+	if err != nil {
+		t.Errorf("Expected no errors from `GetDefaultVoiceSettings`, got \"%T\" error: %q", err, err)
+	}
+	var expSettings elevenlabs.VoiceSettings
+	if err := json.Unmarshal([]byte(respBody), &expSettings); err != nil {
+		t.Fatalf("Failed to unmarshal test respBody: %s", err)
+	}
+	if !reflect.DeepEqual(expSettings, vSettings) {
+		t.Errorf("Unexpected VoiceSettings in response: %+v", vSettings)
+	}
+}
+
+func TestGetVoiceSettings(t *testing.T) {
+	respBody := `
+{
+  "stability": 1,
+  "similarity_boost": 2
+}`
+
+	server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	vSettings, err := client.GetVoiceSettings("TestVoiceID")
+	if err != nil {
+		t.Errorf("Expected no errors from `GetVoiceSettings`, got \"%T\" error: %q", err, err)
+	}
+	var expSettings elevenlabs.VoiceSettings
+	if err := json.Unmarshal([]byte(respBody), &expSettings); err != nil {
+		t.Fatalf("Failed to unmarshal test respBody: %s", err)
+	}
+	if !reflect.DeepEqual(expSettings, vSettings) {
+		t.Errorf("Unexpected VoiceSettings in response: %+v", vSettings)
+	}
+}
+
+func TestGetVoice(t *testing.T) {
+	respBody := `
+{
+  "voice_id": "string",
+  "name": "string",
+  "samples": [
+    {
+      "sample_id": "string",
+      "file_name": "string",
+      "mime_type": "string",
+      "size_bytes": 0,
+      "hash": "string"
+    }
+  ],
+  "category": "string",
+  "fine_tuning": {
+    "model_id": "string",
+    "language": "string",
+    "is_allowed_to_fine_tune": true,
+    "fine_tuning_requested": true,
+    "finetuning_state": "not_started",
+    "verification_attempts": [
+      {
+        "text": "string",
+        "date_unix": 0,
+        "accepted": true,
+        "similarity": 0,
+        "levenshtein_distance": 0,
+        "recording": {
+          "recording_id": "string",
+          "mime_type": "string",
+          "size_bytes": 0,
+          "upload_date_unix": 0,
+          "transcription": "string"
+        }
+      }
+    ],
+    "verification_failures": [
+      "string"
+    ],
+    "verification_attempts_count": 0,
+    "slice_ids": [
+      "string"
+    ]
+  },
+  "labels": {
+    "additionalProp1": "string",
+    "additionalProp2": "string",
+    "additionalProp3": "string"
+  },
+  "description": "string",
+  "preview_url": "string",
+  "available_for_tiers": [
+    "string"
+  ],
+  "settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.7
+  },
+  "sharing": {
+    "status": "string",
+    "history_item_sample_id": "string",
+    "original_voice_id": "string",
+    "public_owner_id": "string",
+    "liked_by_count": 0,
+    "cloned_by_count": 0
+  }
+}
+`
+	testCases := []struct {
+		name           string
+		queries        []elevenlabs.QueryFunc
+		expQueryString string
+	}{
+		{
+			name: "No queries",
+		},
+		{
+			name:           "With settings query",
+			queries:        []elevenlabs.QueryFunc{elevenlabs.WithSettings()},
+			expQueryString: "with_settings=true",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+			defer server.Close()
+			client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+			voice, err := client.GetVoice("TestVoiceID", tc.queries...)
+			if err != nil {
+				t.Errorf("Expected no errors from `GetVoice`, got \"%T\" error: %q", err, err)
+			}
+			var expVoice elevenlabs.Voice
+			if err := json.Unmarshal([]byte(respBody), &expVoice); err != nil {
+				t.Fatalf("Failed to unmarshal test respBody: %s", err)
+			}
+			if !reflect.DeepEqual(expVoice, voice) {
+				t.Errorf("Unexpected Voice in response: %+v", voice)
+			}
+		})
+	}
+}
+
+func TestDeleteVoice(t *testing.T) {
+	server := testServer(t, http.MethodDelete, true, "", http.StatusOK, []byte{}, nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	err := client.DeleteVoice("TestVoiceID")
+	if err != nil {
+		t.Errorf("Expected no errors from `DeleteVoice`, got \"%T\" error: %q", err, err)
+	}
 }
