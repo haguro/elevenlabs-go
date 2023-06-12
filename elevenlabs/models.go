@@ -22,7 +22,7 @@ type TextToSpeechRequest struct {
 	VoiceSettings *VoiceSettings `json:"voice_settings,omitempty"`
 }
 
-type VoicesResponse struct {
+type GetVoicesResponse struct {
 	Voices []Voice `json:"voices"`
 }
 

@@ -90,10 +90,10 @@ func WithSettings() QueryFunc {
 	}
 }
 
-func (c *Client) doRequest(ctx context.Context, method, url string, body []byte, queries ...QueryFunc) ([]byte, error) {
+func (c *Client) doRequest(ctx context.Context, method, url string, bodyBuf *bytes.Buffer, queries ...QueryFunc) ([]byte, error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
-	req, err := http.NewRequestWithContext(timeoutCtx, method, url, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(timeoutCtx, method, url, bodyBuf)
 	if err != nil {
 		return nil, err
 	}
@@ -147,11 +147,11 @@ func (c *Client) TextToSpeech(voiceID string, ttsReq TextToSpeechRequest, querie
 		return nil, err
 	}
 
-	return c.doRequest(c.ctx, http.MethodPost, fmt.Sprintf("%s/text-to-speech/%s", c.baseURL, voiceID), reqBody, queries...)
+	return c.doRequest(c.ctx, http.MethodPost, fmt.Sprintf("%s/text-to-speech/%s", c.baseURL, voiceID), bytes.NewBuffer(reqBody), queries...)
 }
 
 func (c *Client) GetModels() ([]Model, error) {
-	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/models", c.baseURL), nil)
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/models", c.baseURL), &bytes.Buffer{})
 	if err != nil {
 		return nil, err
 	}
@@ -166,12 +166,12 @@ func (c *Client) GetModels() ([]Model, error) {
 }
 
 func (c *Client) GetVoices() ([]Voice, error) {
-	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices", c.baseURL), nil)
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices", c.baseURL), &bytes.Buffer{})
 	if err != nil {
 		return nil, err
 	}
 
-	var voiceResp VoicesResponse
+	var voiceResp GetVoicesResponse
 	err = json.Unmarshal(body, &voiceResp)
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (c *Client) GetVoices() ([]Voice, error) {
 
 func (c *Client) GetDefaultVoiceSettings() (VoiceSettings, error) {
 	var voiceSettings VoiceSettings
-	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/settings/default", c.baseURL), nil)
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/settings/default", c.baseURL), &bytes.Buffer{})
 	if err != nil {
 		return VoiceSettings{}, err
 	}
@@ -197,7 +197,7 @@ func (c *Client) GetDefaultVoiceSettings() (VoiceSettings, error) {
 
 func (c *Client) GetVoiceSettings(voiceId string) (VoiceSettings, error) {
 	var voiceSettings VoiceSettings
-	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s/settings", c.baseURL, voiceId), nil)
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s/settings", c.baseURL, voiceId), &bytes.Buffer{})
 	if err != nil {
 		return VoiceSettings{}, err
 	}
@@ -212,7 +212,7 @@ func (c *Client) GetVoiceSettings(voiceId string) (VoiceSettings, error) {
 
 func (c *Client) GetVoice(voiceId string, queries ...QueryFunc) (Voice, error) {
 	var voice Voice
-	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), nil, queries...)
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), &bytes.Buffer{}, queries...)
 	if err != nil {
 		return Voice{}, err
 	}
@@ -226,6 +226,6 @@ func (c *Client) GetVoice(voiceId string, queries ...QueryFunc) (Voice, error) {
 }
 
 func (c *Client) DeleteVoice(voiceId string) error {
-	_, err := c.doRequest(c.ctx, http.MethodDelete, fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), nil)
+	_, err := c.doRequest(c.ctx, http.MethodDelete, fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), &bytes.Buffer{})
 	return err
 }
