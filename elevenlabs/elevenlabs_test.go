@@ -66,6 +66,7 @@ func TestDefaultClientSetup(t *testing.T) {
 }
 
 func TestRequestTimeout(t *testing.T) {
+	t.Parallel()
 	server := testServer(t, http.MethodPost, true, "", http.StatusOK, []byte{}, nil, 500*time.Millisecond)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, 100*time.Millisecond)
@@ -287,7 +288,7 @@ func TestGetVoices(t *testing.T) {
 	if len(voices) != 1 {
 		t.Fatalf("Expected unmarshalled response to contain exactly one model, got %d", len(voices))
 	}
-	var voicesResp elevenlabs.VoicesResponse
+	var voicesResp elevenlabs.GetVoicesResponse
 	if err := json.Unmarshal([]byte(respBody), &voicesResp); err != nil {
 		t.Fatalf("Failed to unmarshal test respBody: %s", err)
 	}
