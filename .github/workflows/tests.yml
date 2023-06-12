@@ -29,4 +29,9 @@ jobs:
       run: go mod download
 
     - name: Run tests
-      run: go test -v -count=1 ./elevenlabs/...
+      run: go test -race -covermode=atomic -coverprofile=coverage.out -v -count=1 ./elevenlabs/...
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
