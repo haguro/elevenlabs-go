@@ -3,6 +3,7 @@
 ![Go version](https://img.shields.io/badge/go-1.18-blue)
 ![License](https://img.shields.io/github/license/haguro/elevenlabs-go)
 ![Tests](https://github.com/haguro/elevenlabs-go/actions/workflows/tests.yml/badge.svg?branch=main&event=push)
+[![Go Report Card](https://goreportcard.com/badge/github.com/haguro/elevenlabs-go)](https://goreportcard.com/report/github.com/haguro/elevenlabs-go)
 
 This is a Go client library for the ElevenLabs text-to-speech platform. It provides a simple interface to interact with the ElevenLabs API. *Please note: This library is very much a work in progress and far from ready or complete.*
 
