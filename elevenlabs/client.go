@@ -54,8 +54,40 @@ func GetModels() ([]Model, error) {
 	return getDefaultClient().GetModels()
 }
 
+func GetVoices() ([]Voice, error) {
+	return getDefaultClient().GetVoices()
+}
+
+func GetDefaultVoiceSettings() (VoiceSettings, error) {
+	return getDefaultClient().GetDefaultVoiceSettings()
+}
+
+func GetVoiceSettings(voiceId string) (VoiceSettings, error) {
+	return getDefaultClient().GetVoiceSettings(voiceId)
+}
+
+func GetVoice(voiceId string, queries ...QueryFunc) (Voice, error) {
+	return getDefaultClient().GetVoice(voiceId, queries...)
+}
+
+func DeleteVoice(voiceId string) error {
+	return getDefaultClient().DeleteVoice(voiceId)
+}
+
 func NewClient(ctx context.Context, apiKey string, reqTimeout time.Duration) *Client {
 	return &Client{baseURL: elevenlabsBaseURL, apiKey: apiKey, timeout: reqTimeout, ctx: ctx}
+}
+
+func LatencyOptimizations(value int) QueryFunc {
+	return func(q *url.Values) {
+		q.Add("optimize_streaming_latency", fmt.Sprint(value))
+	}
+}
+
+func WithSettings() QueryFunc {
+	return func(q *url.Values) {
+		q.Add("with_settings", "true")
+	}
 }
 
 func (c *Client) doRequest(ctx context.Context, method, url string, body []byte, queries ...QueryFunc) ([]byte, error) {
@@ -87,7 +119,6 @@ func (c *Client) doRequest(ctx context.Context, method, url string, body []byte,
 	if err != nil {
 		return nil, err
 	}
-
 	if resp.StatusCode != http.StatusOK {
 		switch resp.StatusCode {
 		case http.StatusBadRequest, http.StatusUnauthorized:
@@ -108,12 +139,6 @@ func (c *Client) doRequest(ctx context.Context, method, url string, body []byte,
 	}
 
 	return respBody, nil
-}
-
-func LatencyOptimizations(value int) QueryFunc {
-	return func(q *url.Values) {
-		q.Add("optimize_streaming_latency", fmt.Sprint(value))
-	}
 }
 
 func (c *Client) TextToSpeech(voiceID string, ttsReq TextToSpeechRequest, queries ...QueryFunc) ([]byte, error) {
@@ -140,67 +165,67 @@ func (c *Client) GetModels() ([]Model, error) {
 	return models, nil
 }
 
-// func (c *Client) GetVoices() ([]Voice, error) {
-// 	body, err := c.doRequest(c.ctx, "GET", fmt.Sprintf("%s/voices", c.baseURL), nil)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (c *Client) GetVoices() ([]Voice, error) {
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices", c.baseURL), nil)
+	if err != nil {
+		return nil, err
+	}
 
-// 	var voiceResp VoicesResponse
-// 	err = json.Unmarshal(body, &voiceResp)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	var voiceResp VoicesResponse
+	err = json.Unmarshal(body, &voiceResp)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return voiceResp.Voices, nil
-// }
+	return voiceResp.Voices, nil
+}
 
-// func (c *Client) GetDefaultVoiceSettings() (VoiceSettings, error) {
-// 	var voiceSettings VoiceSettings
-// 	body, err := c.doRequest(c.ctx, "GET", fmt.Sprintf("%s/voices/settings/default", c.baseURL), nil)
-// 	if err != nil {
-// 		return VoiceSettings{}, err
-// 	}
+func (c *Client) GetDefaultVoiceSettings() (VoiceSettings, error) {
+	var voiceSettings VoiceSettings
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/settings/default", c.baseURL), nil)
+	if err != nil {
+		return VoiceSettings{}, err
+	}
 
-// 	err = json.Unmarshal(body, &voiceSettings)
-// 	if err != nil {
-// 		return VoiceSettings{}, err
-// 	}
+	err = json.Unmarshal(body, &voiceSettings)
+	if err != nil {
+		return VoiceSettings{}, err
+	}
 
-// 	return voiceSettings, nil
-// }
+	return voiceSettings, nil
+}
 
-// func (c *Client) GetVoiceSettings(voiceId string) (VoiceSettings, error) {
-// 	var voiceSettings VoiceSettings
-// 	body, err := c.doRequest(c.ctx, "GET", fmt.Sprintf("%s/voices/%s/settings", c.baseURL, voiceId), nil)
-// 	if err != nil {
-// 		return VoiceSettings{}, err
-// 	}
+func (c *Client) GetVoiceSettings(voiceId string) (VoiceSettings, error) {
+	var voiceSettings VoiceSettings
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s/settings", c.baseURL, voiceId), nil)
+	if err != nil {
+		return VoiceSettings{}, err
+	}
 
-// 	err = json.Unmarshal(body, &voiceSettings)
-// 	if err != nil {
-// 		return VoiceSettings{}, err
-// 	}
+	err = json.Unmarshal(body, &voiceSettings)
+	if err != nil {
+		return VoiceSettings{}, err
+	}
 
-// 	return voiceSettings, nil
-// }
+	return voiceSettings, nil
+}
 
-// func (c *Client) GetVoice(voiceId string) (Voice, error) {
-// 	var voice Voice
-// 	body, err := c.doRequest(c.ctx, "GET", fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), nil)
-// 	if err != nil {
-// 		return Voice{}, err
-// 	}
+func (c *Client) GetVoice(voiceId string, queries ...QueryFunc) (Voice, error) {
+	var voice Voice
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), nil, queries...)
+	if err != nil {
+		return Voice{}, err
+	}
 
-// 	err = json.Unmarshal(body, &voice)
-// 	if err != nil {
-// 		return Voice{}, err
-// 	}
+	err = json.Unmarshal(body, &voice)
+	if err != nil {
+		return Voice{}, err
+	}
 
-// 	return voice, nil
-// }
+	return voice, nil
+}
 
-// func (c *Client) DeleteVoice(voiceId string) error {
-// 	_, err := c.doRequest(c.ctx, "GET", fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), nil)
-// 	return err
-// }
+func (c *Client) DeleteVoice(voiceId string) error {
+	_, err := c.doRequest(c.ctx, http.MethodDelete, fmt.Sprintf("%s/voices/%s", c.baseURL, voiceId), nil)
+	return err
+}
