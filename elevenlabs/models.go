@@ -1,5 +1,14 @@
 package elevenlabs
 
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
+)
+
 type Language struct {
 	LanguageId string `json:"language_id"`
 	Name       string `json:"name"`
@@ -24,6 +33,10 @@ type TextToSpeechRequest struct {
 
 type GetVoicesResponse struct {
 	Voices []Voice `json:"voices"`
+}
+
+type AddVoiceResponse struct {
+	VoiceId string `json:"voice_id"`
 }
 
 type Voice struct {
@@ -91,4 +104,59 @@ type Recording struct {
 	SizeBytes      int    `json:"size_bytes"`
 	Transcription  string `json:"transcription"`
 	UploadDateUnix int    `json:"upload_date_unix"`
+}
+
+type AddEditVoiceRequest struct {
+	Name        string
+	FilePaths   []string
+	Description string
+	Labels      map[string]string
+}
+
+func (r *AddEditVoiceRequest) buildRequestBody() (*bytes.Buffer, string, error) {
+	var b bytes.Buffer
+
+	w := multipart.NewWriter(&b)
+
+	if err := w.WriteField("name", r.Name); err != nil {
+		return nil, "", err
+	}
+	if r.Description != "" {
+		if err := w.WriteField("description", r.Description); err != nil {
+			return nil, "", err
+		}
+	}
+	if len(r.Labels) > 0 {
+		labelsJson, err := json.Marshal(r.Labels)
+		if err != nil {
+			return nil, "", err
+		}
+		if err := w.WriteField("labels", string(labelsJson)); err != nil {
+			return nil, "", err
+		}
+	}
+
+	for _, file := range r.FilePaths {
+		f, err := os.Open(file)
+		if err != nil {
+			return nil, "", err
+		}
+		defer f.Close()
+
+		fw, err := w.CreateFormFile("files", filepath.Base(file))
+		if err != nil {
+			return nil, "", err
+		}
+		if _, err = io.Copy(fw, f); err != nil {
+			return nil, "", err
+		}
+	}
+
+	err := w.Close()
+	if err != nil {
+		return nil, "", err
+
+	}
+
+	return &b, w.FormDataContentType(), nil
 }

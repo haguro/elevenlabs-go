@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,15 +15,20 @@ import (
 )
 
 const (
-	mockAPIKey  = "MockAPIKey"
-	mockTimeout = 60 * time.Second
+	mockAPIKey       = "MockAPIKey"
+	mockTimeout      = 60 * time.Second
+	contentTypeJSON  = "application/json"
+	contentMultipart = "multipart/form-data"
 )
 
-func testServer(t *testing.T, expMethod string, expectKey bool, queryStr string, statusCode int, respBody []byte, expError error, delay time.Duration) *httptest.Server {
+func testServer(t *testing.T, expMethod string, expContentType string, expectKey bool, queryStr string, statusCode int, respBody []byte, expError error, delay time.Duration) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != expMethod {
-			t.Errorf("Server: expected %q, got %q", expMethod, r.Method)
+			t.Errorf("Server: expected HTTP Method to be %q, got %q", expMethod, r.Method)
+		}
+		if !strings.Contains(r.Header.Get("Content-Type"), expContentType) {
+			t.Errorf("Server: expected Content-Type %q to contain %q", r.Header.Get("Content-Type"), expContentType)
 		}
 		if expectKey {
 			gotAPIKey := r.Header.Get("xi-api-key")
@@ -67,7 +73,7 @@ func TestDefaultClientSetup(t *testing.T) {
 
 func TestRequestTimeout(t *testing.T) {
 	t.Parallel()
-	server := testServer(t, http.MethodPost, true, "", http.StatusOK, []byte{}, nil, 500*time.Millisecond)
+	server := testServer(t, http.MethodPost, contentTypeJSON, true, "", http.StatusOK, []byte{}, nil, 500*time.Millisecond)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, 100*time.Millisecond)
 	_, err := client.TextToSpeech("TestVoiceID", elevenlabs.TextToSpeechRequest{})
@@ -81,7 +87,7 @@ func TestRequestTimeout(t *testing.T) {
 func TestAPIErrorOnBadRequestAndUnauthorized(t *testing.T) {
 	for _, code := range [2]int{http.StatusBadRequest, http.StatusUnauthorized} {
 		t.Run(http.StatusText(code), func(t *testing.T) {
-			server := testServer(t, http.MethodGet, true, "", code, []byte{}, &elevenlabs.APIError{}, 0)
+			server := testServer(t, http.MethodGet, contentTypeJSON, true, "", code, []byte{}, &elevenlabs.APIError{}, 0)
 			defer server.Close()
 			client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 			_, err := client.GetModels()
@@ -97,7 +103,7 @@ func TestAPIErrorOnBadRequestAndUnauthorized(t *testing.T) {
 }
 
 func TestValidationErrorOnUnprocessableEntity(t *testing.T) {
-	server := testServer(t, http.MethodPost, true, "", http.StatusUnprocessableEntity, []byte{}, &elevenlabs.ValidationError{}, 0)
+	server := testServer(t, http.MethodPost, contentTypeJSON, true, "", http.StatusUnprocessableEntity, []byte{}, &elevenlabs.ValidationError{}, 0)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 	_, err := client.TextToSpeech("TestVoiceID", elevenlabs.TextToSpeechRequest{})
@@ -149,7 +155,7 @@ func TestTextToSpeech(t *testing.T) {
 			if tc.excludeAPIKey {
 				requestAPIKey = ""
 			}
-			server := testServer(t, http.MethodPost, false, tc.expQueryString, tc.expectedRespStatus, tc.expResponseBody, nil, 0)
+			server := testServer(t, http.MethodPost, contentTypeJSON, false, tc.expQueryString, tc.expectedRespStatus, tc.expResponseBody, nil, 0)
 			defer server.Close()
 
 			client := elevenlabs.NewMockClient(context.Background(), server.URL, requestAPIKey, mockTimeout)
@@ -186,7 +192,7 @@ func TestGetModels(t *testing.T) {
 	}
 ]`
 
-	server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+	server := testServer(t, http.MethodGet, contentTypeJSON, true, "", http.StatusOK, []byte(respBody), nil, 0)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 	models, err := client.GetModels()
@@ -278,7 +284,7 @@ func TestGetVoices(t *testing.T) {
   ]
 }`
 
-	server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+	server := testServer(t, http.MethodGet, contentTypeJSON, true, "", http.StatusOK, []byte(respBody), nil, 0)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 	voices, err := client.GetVoices()
@@ -304,7 +310,7 @@ func TestGetDefaultVoiceSettings(t *testing.T) {
   "similarity_boost": 2
 }`
 
-	server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+	server := testServer(t, http.MethodGet, contentTypeJSON, true, "", http.StatusOK, []byte(respBody), nil, 0)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 	vSettings, err := client.GetDefaultVoiceSettings()
@@ -327,7 +333,7 @@ func TestGetVoiceSettings(t *testing.T) {
   "similarity_boost": 2
 }`
 
-	server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+	server := testServer(t, http.MethodGet, contentTypeJSON, true, "", http.StatusOK, []byte(respBody), nil, 0)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 	vSettings, err := client.GetVoiceSettings("TestVoiceID")
@@ -428,7 +434,7 @@ func TestGetVoice(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			server := testServer(t, http.MethodGet, true, "", http.StatusOK, []byte(respBody), nil, 0)
+			server := testServer(t, http.MethodGet, contentTypeJSON, true, "", http.StatusOK, []byte(respBody), nil, 0)
 			defer server.Close()
 			client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 			voice, err := client.GetVoice("TestVoiceID", tc.queries...)
@@ -447,11 +453,44 @@ func TestGetVoice(t *testing.T) {
 }
 
 func TestDeleteVoice(t *testing.T) {
-	server := testServer(t, http.MethodDelete, true, "", http.StatusOK, []byte{}, nil, 0)
+	server := testServer(t, http.MethodDelete, contentTypeJSON, true, "", http.StatusOK, []byte{}, nil, 0)
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
 	err := client.DeleteVoice("TestVoiceID")
 	if err != nil {
 		t.Errorf("Expected no errors from `DeleteVoice`, got \"%T\" error: %q", err, err)
+	}
+}
+
+func TestEditVoiceSettings(t *testing.T) {
+	server := testServer(t, http.MethodPost, contentTypeJSON, true, "", http.StatusOK, []byte{}, nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	err := client.EditVoiceSettings("voiceID", elevenlabs.VoiceSettings{Stability: 0.2, SimilarityBoost: 0.7})
+	if err != nil {
+		t.Errorf("Expected no errors, got error: %q", err)
+	}
+}
+
+func TestAddVoice(t *testing.T) {
+	server := testServer(t, http.MethodPost, contentMultipart, true, "", http.StatusOK, []byte(`{"voice_id":"TestVoiceId"}`), nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	id, err := client.AddVoice(elevenlabs.AddEditVoiceRequest{Name: "TestVoice"})
+	if err != nil {
+		t.Errorf("Expected no errors, got error: %q", err)
+	}
+	if id != "TestVoiceId" {
+		t.Errorf("Expected AddVoice to return voice ID %q, got %q", "TestVoiceId", id)
+	}
+}
+
+func TestEditVoice(t *testing.T) {
+	server := testServer(t, http.MethodPost, contentMultipart, true, "", http.StatusOK, []byte{}, nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	err := client.EditVoice("TestVoiceID", elevenlabs.AddEditVoiceRequest{Name: "NewTestVoiceName"})
+	if err != nil {
+		t.Errorf("Expected no errors, got error: %q", err)
 	}
 }
