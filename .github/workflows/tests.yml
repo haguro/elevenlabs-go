@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-all:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get Go version from go.mod
+      id: goversion
+      run: |
+        echo ::set-output name=version::$(awk -F" " '/^go/ { print $2 }' go.mod)
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ steps.goversion.outputs.version }}
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test -v -count=1 ./elevenlabs/...
