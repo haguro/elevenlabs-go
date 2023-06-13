@@ -494,3 +494,27 @@ func TestEditVoice(t *testing.T) {
 		t.Errorf("Expected no errors, got error: %q", err)
 	}
 }
+
+func TestDeleteSample(t *testing.T) {
+	server := testServer(t, http.MethodDelete, contentTypeJSON, true, "", http.StatusOK, []byte{}, nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	err := client.DeleteSample("TestVoiceID", "TestSampleID")
+	if err != nil {
+		t.Errorf("Expected no errors from `DeleteSample`, got \"%T\" error: %q", err, err)
+	}
+}
+
+func TestGetSampleAudio(t *testing.T) {
+	expRespBody := "testaudiobytes"
+	server := testServer(t, http.MethodGet, contentTypeJSON, true, "", http.StatusOK, []byte(expRespBody), nil, 0)
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	respBody, err := client.GetSampleAudio("TestVoiceID", "TestSampleID")
+	if err != nil {
+		t.Errorf("Expected no errors from `GetSampleAudio`, got \"%T\" error: %q", err, err)
+	}
+	if string(respBody) != string(expRespBody) {
+		t.Errorf("Expected response %q, got %q", string(expRespBody), string(respBody))
+	}
+}

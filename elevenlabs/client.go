@@ -87,6 +87,14 @@ func EditVoice(voiceId string, voiceReq AddEditVoiceRequest) error {
 	return getDefaultClient().EditVoice(voiceId, voiceReq)
 }
 
+func DeleteSample(voiceId, sampleId string) error {
+	return getDefaultClient().DeleteSample(voiceId, sampleId)
+}
+
+func GetSampleAudio(voiceId, sampleId string) ([]byte, error) {
+	return getDefaultClient().GetSampleAudio(voiceId, sampleId)
+}
+
 func NewClient(ctx context.Context, apiKey string, reqTimeout time.Duration) *Client {
 	return &Client{baseURL: elevenlabsBaseURL, apiKey: apiKey, timeout: reqTimeout, ctx: ctx}
 }
@@ -278,4 +286,13 @@ func (c *Client) EditVoice(voiceId string, voiceReq AddEditVoiceRequest) error {
 	}
 	_, err = c.doRequest(c.ctx, http.MethodPost, fmt.Sprintf("%s/voices/%s/edit", c.baseURL, voiceId), reqBodyBuf, contentType)
 	return err
+}
+
+func (c *Client) DeleteSample(voiceId, sampleId string) error {
+	_, err := c.doRequest(c.ctx, http.MethodDelete, fmt.Sprintf("%s/voices/%s/samples/%s", c.baseURL, voiceId, sampleId), &bytes.Buffer{}, contentTypeJSON)
+	return err
+}
+
+func (c *Client) GetSampleAudio(voiceId, sampleId string) ([]byte, error) {
+	return c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s/samples/%s/audio", c.baseURL, voiceId, sampleId), &bytes.Buffer{}, contentTypeJSON)
 }
