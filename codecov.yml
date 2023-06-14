@@ -1,0 +1,2 @@
+ignore:
+  - "elevenlabs/shorthand.go"

@@ -3,6 +3,7 @@ package elevenlabs
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
@@ -115,47 +116,48 @@ type AddEditVoiceRequest struct {
 
 func (r *AddEditVoiceRequest) buildRequestBody() (*bytes.Buffer, string, error) {
 	var b bytes.Buffer
-
 	w := multipart.NewWriter(&b)
+	buildFailed := func(err error) (*bytes.Buffer, string, error) {
+		return nil, "", fmt.Errorf("failed to build request body: %w", err)
+	}
 
 	if err := w.WriteField("name", r.Name); err != nil {
-		return nil, "", err
+		return buildFailed(err)
 	}
 	if r.Description != "" {
 		if err := w.WriteField("description", r.Description); err != nil {
-			return nil, "", err
+			return buildFailed(err)
 		}
 	}
 	if len(r.Labels) > 0 {
 		labelsJson, err := json.Marshal(r.Labels)
 		if err != nil {
-			return nil, "", err
+			return buildFailed(err)
 		}
 		if err := w.WriteField("labels", string(labelsJson)); err != nil {
-			return nil, "", err
+			return buildFailed(err)
 		}
 	}
 
 	for _, file := range r.FilePaths {
 		f, err := os.Open(file)
 		if err != nil {
-			return nil, "", err
+			return buildFailed(err)
 		}
 		defer f.Close()
 
 		fw, err := w.CreateFormFile("files", filepath.Base(file))
 		if err != nil {
-			return nil, "", err
+			return buildFailed(err)
 		}
 		if _, err = io.Copy(fw, f); err != nil {
-			return nil, "", err
+			return buildFailed(err)
 		}
 	}
 
 	err := w.Close()
 	if err != nil {
-		return nil, "", err
-
+		return buildFailed(err)
 	}
 
 	return &b, w.FormDataContentType(), nil
