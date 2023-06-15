@@ -108,7 +108,7 @@ func (c *Client) doRequest(ctx context.Context, method, url string, bodyBuf *byt
 			}
 			return respBody, valErr
 		default:
-			return respBody, fmt.Errorf("unexpected http status  \"%d %s\" returned from server", resp.StatusCode, http.StatusText(resp.StatusCode))
+			return respBody, fmt.Errorf("unexpected HTTP status \"%d %s\" returned from server", resp.StatusCode, http.StatusText(resp.StatusCode))
 		}
 	}
 
