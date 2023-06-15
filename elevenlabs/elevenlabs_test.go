@@ -158,6 +158,26 @@ func TestValidationErrorOnUnprocessableEntity(t *testing.T) {
 	}
 }
 
+func TestErrorOnUnexpectedStatusCode(t *testing.T) {
+	server := testServer(t, testServerConfig{
+		expectedMethod:      http.MethodPost,
+		expectedContentType: contentTypeJSON,
+		expectedAccept:      "application/json",
+		statusCode:          http.StatusInternalServerError,
+	})
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	_, err := client.TextToSpeech("TestVoiceID", elevenlabs.TextToSpeechRequest{})
+	if err == nil {
+		t.Error("Expected error, got nil")
+		return
+	}
+	want := "unexpected HTTP status"
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("Expected error to contain %q, got %q", want, err)
+	}
+}
+
 func TestTextToSpeech(t *testing.T) {
 	testCases := []struct {
 		name               string
