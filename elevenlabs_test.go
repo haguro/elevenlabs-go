@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/haguro/elevenlabs-go/elevenlabs"
+	"github.com/haguro/elevenlabs-go"
 )
 
 const (

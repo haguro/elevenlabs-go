@@ -25,7 +25,7 @@ package main
 
 import (
  "fmt"
- "github.com/haguro/elevenlabs-go/elevenlabs"
+ "github.com/haguro/elevenlabs-go"
 )
 
 func main() {
@@ -64,7 +64,7 @@ package main
 import (
  "context"
  "time"
- "github.com/haguro/elevenlabs-go/elevenlabs"
+ "github.com/haguro/elevenlabs-go"
 )
 
 func main() {
