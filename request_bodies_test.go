@@ -1,7 +1,24 @@
 package elevenlabs_test
 
 var testRespBodies = map[string][]byte{
-
+	"TestAPIErrorOnBadRequestAndUnauthorized": []byte(`{
+  "detail": {
+    "status": "needs_authorization",
+    "message": "Neither authorization header nor xi-api-key received, please provide one."
+  }
+}`),
+	"TestValidationErrorOnUnprocessableEntity": []byte(`{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string"
+    }
+  ]
+}`),
 	"TestGetModels": []byte(`[
 	{
 		"model_id": "TestModelID",
@@ -169,4 +186,38 @@ var testRespBodies = map[string][]byte{
 }`),
 	"TestGetSampleAudio": []byte("testaudiobytes"),
 	"TestTextToSpeech":   []byte("testaudiobytes"),
+	"TestGetHistory-NoMore": []byte(`{
+  "history":[],
+  "last_history_item_id": "",
+  "has_more": false
+}`),
+	"TestGetHistory-HasMore": []byte(`{
+  "history":[],
+  "last_history_item_id": "fake-history-id",
+  "has_more": true
+}`),
+	"TestGetHistoryItem": []byte(`{
+  "history_item_id": "TestHistoryItemID",
+  "request_id": "string",
+  "voice_id": "string",
+  "voice_name": "string",
+  "text": "string",
+  "date_unix": 0,
+  "character_count_change_from": 0,
+  "character_count_change_to": 0,
+  "content_type": "string",
+  "state": "created",
+  "settings": {},
+  "feedback": {
+    "thumbs_up": true,
+    "feedback": "string",
+    "emotions": true,
+    "inaccurate_clone": true,
+    "glitches": true,
+    "audio_quality": true,
+    "other": true,
+    "review_status": "not_reviewed"
+  }
+}`),
+	"TestDownloadHistoryAudio": []byte("testhistoryitemaudiobytes"),
 }

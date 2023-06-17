@@ -78,7 +78,7 @@ type VoiceSample struct {
 
 type FineTuning struct {
 	FineTuningRequested       bool                  `json:"fine_tuning_requested"`
-	FineTuningState           FineTuningState       `json:"finetuning_state"`
+	FineTuningState           string                `json:"finetuning_state"`
 	IsAllowedToFineTune       bool                  `json:"is_allowed_to_fine_tune"`
 	Language                  string                `json:"language"`
 	ModelId                   string                `json:"model_id"`
@@ -87,8 +87,6 @@ type FineTuning struct {
 	VerificationAttemptsCount int                   `json:"verification_attempts_count"`
 	VerificationFailures      []string              `json:"verification_failures"`
 }
-
-type FineTuningState string
 
 type VerificationAttempt struct {
 	Accepted            bool      `json:"accepted"`
@@ -105,6 +103,42 @@ type Recording struct {
 	SizeBytes      int    `json:"size_bytes"`
 	Transcription  string `json:"transcription"`
 	UploadDateUnix int    `json:"upload_date_unix"`
+}
+
+type DownloadHistoryRequest struct {
+	HistoryItemIds []string `json:"history_item_ids"`
+}
+
+type GetHistoryResponse struct {
+	History           []HistoryItem `json:"history"`
+	LastHistoryItemId string        `json:"last_history_item_id"`
+	HasMore           bool          `json:"has_more"`
+}
+
+type HistoryItem struct {
+	CharacterCountChangeFrom int                    `json:"character_count_change_from"`
+	CharacterCountChangeTo   int                    `json:"character_count_change_to"`
+	ContentType              string                 `json:"content_type"`
+	DateUnix                 int                    `json:"date_unix"`
+	Feedback                 Feedback               `json:"feedback"`
+	HistoryItemId            string                 `json:"history_item_id"`
+	RequestId                string                 `json:"request_id"`
+	Settings                 map[string]interface{} `json:"settings"`
+	State                    string                 `json:"state"`
+	Text                     string                 `json:"text"`
+	VoiceId                  string                 `json:"voice_id"`
+	VoiceName                string                 `json:"voice_name"`
+}
+
+type Feedback struct {
+	AudioQuality    bool    `json:"audio_quality"`
+	Emotions        bool    `json:"emotions"`
+	Feedback        string  `json:"feedback"`
+	Glitches        bool    `json:"glitches"`
+	InaccurateClone bool    `json:"inaccurate_clone"`
+	Other           bool    `json:"other"`
+	ReviewStatus    *string `json:"review_status,omitempty"`
+	ThumbsUp        bool    `json:"thumbs_up"`
 }
 
 type AddEditVoiceRequest struct {

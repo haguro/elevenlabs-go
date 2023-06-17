@@ -22,21 +22,20 @@ const (
 )
 
 type testServerConfig struct {
-	KeyOptional         bool
+	keyOptional         bool
 	expectedMethod      string
 	expectedContentType string
 	expectedAccept      string
 	expectedQueryStr    string
 	statusCode          int
 	responseBody        []byte
-	returnErr           error
 	responseDelay       time.Duration
 }
 
 func testServer(t *testing.T, config testServerConfig) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !config.KeyOptional {
+		if !config.keyOptional {
 			gotAPIKey := r.Header.Get("xi-api-key")
 			if gotAPIKey != mockAPIKey {
 				t.Errorf("Server: expected API Key %q, got %q", mockAPIKey, gotAPIKey)
@@ -51,7 +50,6 @@ func testServer(t *testing.T, config testServerConfig) *httptest.Server {
 			if !strings.Contains(r.Header.Get("Content-Type"), config.expectedContentType) {
 				t.Errorf("Server: expected Content-Type %q to contain %q", r.Header.Get("Content-Type"), config.expectedContentType)
 			}
-			w.Header().Add("Content-Type", config.expectedContentType)
 		}
 
 		if config.expectedAccept != "" {
@@ -72,14 +70,6 @@ func testServer(t *testing.T, config testServerConfig) *httptest.Server {
 		}
 
 		w.WriteHeader(config.statusCode)
-		if config.returnErr != nil {
-			b, err := json.Marshal(config.returnErr)
-			if err != nil {
-				t.Fatal("Failed to marshal returnErr")
-			}
-			w.Write(b)
-			return
-		}
 		w.Write(config.responseBody)
 	}))
 }
@@ -122,7 +112,7 @@ func TestAPIErrorOnBadRequestAndUnauthorized(t *testing.T) {
 				expectedContentType: contentTypeJSON,
 				expectedAccept:      "application/json",
 				statusCode:          code,
-				returnErr:           &elevenlabs.APIError{},
+				responseBody:        testRespBodies["TestAPIErrorOnBadRequestAndUnauthorized"],
 			})
 			defer server.Close()
 			client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
@@ -144,7 +134,7 @@ func TestValidationErrorOnUnprocessableEntity(t *testing.T) {
 		expectedContentType: contentTypeJSON,
 		expectedAccept:      "application/json",
 		statusCode:          http.StatusUnprocessableEntity,
-		returnErr:           &elevenlabs.ValidationError{},
+		responseBody:        testRespBodies["TestValidationErrorOnUnprocessableEntity"],
 	})
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
@@ -218,7 +208,7 @@ func TestTextToSpeech(t *testing.T) {
 				requestAPIKey = ""
 			}
 			server := testServer(t, testServerConfig{
-				KeyOptional:         tc.excludeAPIKey,
+				keyOptional:         tc.excludeAPIKey,
 				expectedMethod:      http.MethodPost,
 				expectedContentType: contentTypeJSON,
 				expectedQueryStr:    tc.expQueryString,
@@ -409,7 +399,7 @@ func TestEditVoiceSettings(t *testing.T) {
 	})
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
-	err := client.EditVoiceSettings("voiceID", elevenlabs.VoiceSettings{Stability: 0.2, SimilarityBoost: 0.7})
+	err := client.EditVoiceSettings("TestVoiceID", elevenlabs.VoiceSettings{Stability: 0.2, SimilarityBoost: 0.7})
 	if err != nil {
 		t.Errorf("Expected no errors, got error: %q", err)
 	}
@@ -470,7 +460,6 @@ func TestAddVoice(t *testing.T) {
 
 		})
 	}
-
 }
 
 func TestEditVoice(t *testing.T) {
@@ -521,5 +510,169 @@ func TestGetSampleAudio(t *testing.T) {
 	}
 	if string(respBody) != string(expRespBody) {
 		t.Errorf("Expected response %q, got %q", string(expRespBody), string(respBody))
+	}
+}
+
+func TestGetHistory(t *testing.T) {
+	testCases := []struct {
+		name           string
+		queries        []elevenlabs.QueryFunc
+		expQueryString string
+		expStatus      int
+		respBody       []byte
+		expNextFunc    bool
+	}{
+		{
+			name:           "setting relevant queries",
+			queries:        []elevenlabs.QueryFunc{elevenlabs.PageSize(50), elevenlabs.StartAfter("fake-history-id")},
+			expQueryString: "page_size=50&start_after_history_item_id=fake-history-id",
+			respBody:       []byte("{}"),
+		},
+		{
+			name:        "return nil for next page function when has_more is false",
+			respBody:    testRespBodies["TestGetHistory-NoMore"],
+			expNextFunc: false,
+		},
+		{
+			name:        "return next page function when has_more is true",
+			respBody:    testRespBodies["TestGetHistory-HasMore"],
+			expNextFunc: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// mockResponse := testRespBodies["TestGetHistory"]
+			config := testServerConfig{
+				keyOptional:         false,
+				expectedMethod:      "GET",
+				expectedContentType: "application/json",
+				expectedAccept:      "application/json",
+				expectedQueryStr:    tc.expQueryString,
+				statusCode:          http.StatusOK,
+				responseBody:        tc.respBody,
+				responseDelay:       0,
+			}
+			server := testServer(t, config)
+			defer server.Close()
+			client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+
+			resp, nextPageFunc, err := client.GetHistory(tc.queries...)
+			if err != nil {
+				t.Fatalf("Expected GetHistory to return no error, got %q", err)
+			}
+
+			expectedResp := elevenlabs.GetHistoryResponse{}
+			err = json.Unmarshal(tc.respBody, &expectedResp)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !reflect.DeepEqual(resp, expectedResp) {
+				t.Errorf("Expected GetHistory to return response %+v, got %+v", expectedResp, resp)
+			}
+
+			if !tc.expNextFunc {
+				if nextPageFunc != nil {
+					t.Error("Expected GetHistory to return a nil next page function, but it didn't")
+				}
+				return
+			}
+
+			nextResp, _, err := nextPageFunc(elevenlabs.PageSize(99))
+			if err != nil {
+				t.Fatalf("Expected GetHistory to return no error, got %q", err)
+			}
+
+			expectedNextResp := elevenlabs.GetHistoryResponse{}
+			err = json.Unmarshal(tc.respBody, &expectedNextResp)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if !reflect.DeepEqual(nextResp, expectedNextResp) {
+				t.Errorf("Expected calling next function to return response %+v, got %+v", expectedNextResp, nextResp)
+			}
+		})
+	}
+}
+
+func TestGetHistoryItem(t *testing.T) {
+	respBody := testRespBodies["TestGetHistoryItem"]
+	server := testServer(t, testServerConfig{
+		expectedMethod:      http.MethodGet,
+		expectedContentType: contentTypeJSON,
+		expectedAccept:      "application/json",
+		statusCode:          http.StatusOK,
+		responseBody:        respBody,
+	})
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	historyItem, err := client.GetHistoryItem("TestHistoryItemID")
+	if err != nil {
+		t.Errorf("Expected no errors from `GetHistoryItem`, got \"%T\" error: %q", err, err)
+	}
+	var expItem elevenlabs.HistoryItem
+	if err := json.Unmarshal(respBody, &expItem); err != nil {
+		t.Fatalf("Failed to unmarshal test respBody: %s", err)
+	}
+	if !reflect.DeepEqual(expItem, historyItem) {
+		t.Errorf("Unexpected HistoryItem in response: %+v", historyItem)
+	}
+}
+
+func TestDeleteHistoryItem(t *testing.T) {
+	server := testServer(t, testServerConfig{
+		expectedMethod:      http.MethodDelete,
+		expectedContentType: contentTypeJSON,
+		expectedAccept:      "application/json",
+		statusCode:          http.StatusOK,
+	})
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	err := client.DeleteHistoryItem("TestHistoryItemID")
+	if err != nil {
+		t.Errorf("Expected no errors from `DeleteHistoryItem`, got \"%T\" error: %q", err, err)
+	}
+}
+
+func TestGetHistoryItemAudio(t *testing.T) {
+	expRespBody := testRespBodies["TestGetHistoryItemAudio"]
+	server := testServer(t, testServerConfig{
+		expectedMethod:      http.MethodGet,
+		expectedContentType: contentTypeJSON,
+		expectedAccept:      "application/json",
+		statusCode:          http.StatusOK,
+		responseBody:        []byte(expRespBody),
+	})
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	respBody, err := client.GetHistoryItemAudio("TestHistoryItemID")
+	if err != nil {
+		t.Errorf("Expected no errors from `GetHistoryItemAudio`, got \"%T\" error: %q", err, err)
+	}
+	if string(respBody) != string(expRespBody) {
+		t.Errorf("Expected response %q, got %q", string(expRespBody), string(respBody))
+	}
+}
+
+func TestDownloadHistoryAudio(t *testing.T) {
+	expResponseBody := testRespBodies["TestDownloadHistoryAudio"]
+	server := testServer(t, testServerConfig{
+		expectedMethod:      http.MethodPost,
+		expectedContentType: contentTypeJSON,
+		statusCode:          http.StatusOK,
+		responseBody:        expResponseBody,
+	})
+	defer server.Close()
+
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	respBody, err := client.DownloadHistoryAudio(elevenlabs.DownloadHistoryRequest{HistoryItemIds: []string{"TestHistoryItemID"}})
+
+	if err != nil {
+		t.Errorf("Expected no errors, got error: %q", err)
+	}
+
+	if string(respBody) != string(expResponseBody) {
+		t.Errorf("Expected response %q, got %q", string(expResponseBody), string(respBody))
 	}
 }

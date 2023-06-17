@@ -204,13 +204,13 @@ func (c *Client) DeleteVoice(voiceId string) error {
 	return err
 }
 
-func (c *Client) EditVoiceSettings(voiceID string, settings VoiceSettings) error {
+func (c *Client) EditVoiceSettings(voiceId string, settings VoiceSettings) error {
 	reqBody, err := json.Marshal(settings)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.doRequest(c.ctx, http.MethodPost, fmt.Sprintf("%s/voices/%s/settings/edit", c.baseURL, voiceID), bytes.NewBuffer(reqBody), contentTypeJSON)
+	_, err = c.doRequest(c.ctx, http.MethodPost, fmt.Sprintf("%s/voices/%s/settings/edit", c.baseURL, voiceId), bytes.NewBuffer(reqBody), contentTypeJSON)
 	return err
 }
 
@@ -247,4 +247,74 @@ func (c *Client) DeleteSample(voiceId, sampleId string) error {
 
 func (c *Client) GetSampleAudio(voiceId, sampleId string) ([]byte, error) {
 	return c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/voices/%s/samples/%s/audio", c.baseURL, voiceId, sampleId), &bytes.Buffer{}, contentTypeJSON)
+}
+
+func PageSize(n int) QueryFunc {
+	return func(q *url.Values) {
+		q.Add("page_size", fmt.Sprint(n))
+	}
+}
+
+func StartAfter(id string) QueryFunc {
+	return func(q *url.Values) {
+		q.Add("start_after_history_item_id", id)
+	}
+}
+
+type NextHistoryPageFunc func(...QueryFunc) (GetHistoryResponse, NextHistoryPageFunc, error)
+
+func (c *Client) GetHistory(queries ...QueryFunc) (GetHistoryResponse, NextHistoryPageFunc, error) {
+	var historyResp GetHistoryResponse
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/history", c.baseURL), &bytes.Buffer{}, contentTypeJSON, queries...)
+	if err != nil {
+		return GetHistoryResponse{}, nil, err
+	}
+
+	err = json.Unmarshal(body, &historyResp)
+	if err != nil {
+		return GetHistoryResponse{}, nil, err
+	}
+
+	if !historyResp.HasMore {
+		return historyResp, nil, nil
+	}
+
+	nextPageFunc := func(qf ...QueryFunc) (GetHistoryResponse, NextHistoryPageFunc, error) {
+		qf = append(qf, StartAfter(historyResp.LastHistoryItemId))
+		return c.GetHistory(qf...)
+	}
+	return historyResp, nextPageFunc, nil
+}
+
+func (c *Client) GetHistoryItem(itemId string) (HistoryItem, error) {
+	var historyItem HistoryItem
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/history/%s", c.baseURL, itemId), &bytes.Buffer{}, contentTypeJSON)
+	if err != nil {
+		return HistoryItem{}, err
+	}
+
+	err = json.Unmarshal(body, &historyItem)
+	if err != nil {
+		return HistoryItem{}, err
+	}
+
+	return historyItem, nil
+}
+
+func (c *Client) DeleteHistoryItem(itemId string) error {
+	_, err := c.doRequest(c.ctx, http.MethodDelete, fmt.Sprintf("%s/history/%s", c.baseURL, itemId), &bytes.Buffer{}, contentTypeJSON)
+	return err
+}
+
+func (c *Client) GetHistoryItemAudio(itemId string) ([]byte, error) {
+	return c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/history/%s/audio", c.baseURL, itemId), &bytes.Buffer{}, contentTypeJSON)
+}
+
+func (c *Client) DownloadHistoryAudio(dlReq DownloadHistoryRequest) ([]byte, error) {
+	reqBody, err := json.Marshal(dlReq)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.doRequest(c.ctx, http.MethodPost, fmt.Sprintf("%s/history/download", c.baseURL), bytes.NewBuffer(reqBody), contentTypeJSON)
 }
