@@ -69,4 +69,3 @@ func GetHistoryItemAudio(itemId string) ([]byte, error) {
 func DownloadHistoryAudio(dlReq DownloadHistoryRequest) ([]byte, error) {
 	return getDefaultClient().DownloadHistoryAudio(dlReq)
 }
-
