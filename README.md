@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/haguro/elevenlabs-go/branch/main/graph/badge.svg?token=UM33DSSTAG)](https://codecov.io/gh/haguro/elevenlabs-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/haguro/elevenlabs-go)](https://goreportcard.com/report/github.com/haguro/elevenlabs-go)
 
-This is a Go client library for the ElevenLabs text-to-speech platform. It provides a simple interface to interact with the ElevenLabs API. *Please note: This library is very much a work in progress and far from ready or complete.*
+This is a Go client library for the ElevenLabs text-to-speech platform. It provides a simple interface to interact with the ElevenLabs API. *Please note: This library is still a work in progress, incomplete and is not intended for production use*
 
 ## Installation
 
@@ -40,6 +40,7 @@ func main() {
   elevenlabs.TextToSpeechRequest{
    Text: "Hello, world!",
  })
+
  if err != nil {
   fmt.Println(err)
   os.Exit(1)
