@@ -419,7 +419,7 @@ func TestAddVoice(t *testing.T) {
 			expError:    false,
 		},
 		{
-			name:        "with non-existant sample file",
+			name:        "with non-existent sample file",
 			paths:       []string{"testdata/not-there.mp3"},
 			expRespBody: []byte("{}"),
 			expError:    true,
@@ -674,5 +674,53 @@ func TestDownloadHistoryAudio(t *testing.T) {
 
 	if string(respBody) != string(expResponseBody) {
 		t.Errorf("Expected response %q, got %q", string(expResponseBody), string(respBody))
+	}
+}
+
+func TestGetSubscription(t *testing.T) {
+	respBody := testRespBodies["TestGetSubscription"]
+	server := testServer(t, testServerConfig{
+		expectedMethod:      http.MethodGet,
+		expectedContentType: contentTypeJSON,
+		expectedAccept:      "application/json",
+		statusCode:          http.StatusOK,
+		responseBody:        respBody,
+	})
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	subscription, err := client.GetSubscription()
+	if err != nil {
+		t.Errorf("Expected no errors from `GetSubscription`, got \"%T\" error: %q", err, err)
+	}
+	var expSub elevenlabs.Subscription
+	if err := json.Unmarshal(respBody, &expSub); err != nil {
+		t.Fatalf("Failed to unmarshal test respBody: %s", err)
+	}
+	if !reflect.DeepEqual(expSub, subscription) {
+		t.Errorf("Unexpected Subscription in response: %+v", subscription)
+	}
+}
+
+func TestGetUser(t *testing.T) {
+	respBody := testRespBodies["TestGetUser"]
+	server := testServer(t, testServerConfig{
+		expectedMethod:      http.MethodGet,
+		expectedContentType: contentTypeJSON,
+		expectedAccept:      "application/json",
+		statusCode:          http.StatusOK,
+		responseBody:        respBody,
+	})
+	defer server.Close()
+	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
+	user, err := client.GetUser()
+	if err != nil {
+		t.Errorf("Expected no errors from `GetUser`, got \"%T\" error: %q", err, err)
+	}
+	var expUser elevenlabs.User
+	if err := json.Unmarshal(respBody, &expUser); err != nil {
+		t.Fatalf("Failed to unmarshal test respBody: %s", err)
+	}
+	if !reflect.DeepEqual(expUser, user) {
+		t.Errorf("Unexpected User in response: %+v", user)
 	}
 }

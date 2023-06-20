@@ -141,6 +141,37 @@ type Feedback struct {
 	ThumbsUp        bool    `json:"thumbs_up"`
 }
 
+type Subscription struct {
+	AllowedToExtendCharacterLimit  bool    `json:"allowed_to_extend_character_limit"`
+	CanExtendCharacterLimit        bool    `json:"can_extend_character_limit"`
+	CanExtendVoiceLimit            bool    `json:"can_extend_voice_limit"`
+	CanUseInstantVoiceCloning      bool    `json:"can_use_instant_voice_cloning"`
+	CanUseProfessionalVoiceCloning bool    `json:"can_use_professional_voice_cloning"`
+	CharacterCount                 int     `json:"character_count"`
+	CharacterLimit                 int     `json:"character_limit"`
+	Currency                       string  `json:"currency"`
+	NextCharacterCountResetUnix    int     `json:"next_character_count_reset_unix"`
+	ProfessionalVoiceLimit         int     `json:"professional_voice_limit"`
+	Status                         string  `json:"status"`
+	Tier                           string  `json:"tier"`
+	VoiceLimit                     int     `json:"voice_limit"`
+	HasOpenInvoices                bool    `json:"has_open_invoices"`
+	NextInvoice                    Invoice `json:"next_invoice"`
+	withInvoicingDetails           bool
+}
+
+type Invoice struct {
+	AmountDueCents         int `json:"amount_due_cents"`
+	NextPaymentAttemptUnix int `json:"next_payment_attempt_unix"`
+}
+
+type User struct {
+	Subscription                Subscription `json:"subscription"`
+	IsNewUser                   bool         `json:"is_new_user"`
+	XiApiKey                    string       `json:"xi_api_key"`
+	CanUseDelayedPaymentMethods bool         `json:"can_use_delayed_payment_methods"`
+}
+
 type AddEditVoiceRequest struct {
 	Name        string
 	FilePaths   []string

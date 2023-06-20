@@ -320,3 +320,33 @@ func (c *Client) DownloadHistoryAudio(dlReq DownloadHistoryRequest) ([]byte, err
 
 	return c.doRequest(c.ctx, http.MethodPost, fmt.Sprintf("%s/history/download", c.baseURL), bytes.NewBuffer(reqBody), contentTypeJSON)
 }
+
+func (c *Client) GetSubscription() (Subscription, error) {
+	sub := Subscription{}
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/user/subscription", c.baseURL), &bytes.Buffer{}, contentTypeJSON)
+	if err != nil {
+		return sub, err
+	}
+
+	err = json.Unmarshal(body, &sub)
+	if err != nil {
+		return sub, err
+	}
+
+	return sub, nil
+}
+
+func (c *Client) GetUser() (User, error) {
+	user := User{}
+	body, err := c.doRequest(c.ctx, http.MethodGet, fmt.Sprintf("%s/user", c.baseURL), &bytes.Buffer{}, contentTypeJSON)
+	if err != nil {
+		return user, err
+	}
+
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
