@@ -220,4 +220,45 @@ var testRespBodies = map[string][]byte{
   }
 }`),
 	"TestDownloadHistoryAudio": []byte("testhistoryitemaudiobytes"),
+	"TestGetSubscription": []byte(`
+{
+  "tier": "string",
+  "character_count": 0,
+  "character_limit": 0,
+  "can_extend_character_limit": true,
+  "allowed_to_extend_character_limit": true,
+  "next_character_count_reset_unix": 0,
+  "voice_limit": 0,
+  "professional_voice_limit": 0,
+  "can_extend_voice_limit": true,
+  "can_use_instant_voice_cloning": true,
+  "can_use_professional_voice_cloning": true,
+  "currency": "usd",
+  "status": "trialing",
+  "next_invoice": {
+    "amount_due_cents": 0,
+    "next_payment_attempt_unix": 0
+  },
+  "has_open_invoices": true
+}`),
+	"TestGetUser": []byte(`{
+  "subscription": {
+    "tier": "string",
+    "character_count": 0,
+    "character_limit": 0,
+    "can_extend_character_limit": true,
+    "allowed_to_extend_character_limit": true,
+    "next_character_count_reset_unix": 0,
+    "voice_limit": 0,
+    "professional_voice_limit": 0,
+    "can_extend_voice_limit": true,
+    "can_use_instant_voice_cloning": true,
+    "can_use_professional_voice_cloning": true,
+    "currency": "usd",
+    "status": "trialing"
+  },
+  "is_new_user": true,
+  "xi_api_key": "string",
+  "can_use_delayed_payment_methods": true
+}`),
 }
