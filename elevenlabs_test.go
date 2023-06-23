@@ -90,7 +90,7 @@ func TestRequestTimeout(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodPost,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseDelay:       500 * time.Millisecond,
 	})
@@ -110,7 +110,7 @@ func TestAPIErrorOnBadRequestAndUnauthorized(t *testing.T) {
 			server := testServer(t, testServerConfig{
 				expectedMethod:      http.MethodGet,
 				expectedContentType: contentTypeJSON,
-				expectedAccept:      "application/json",
+				expectedAccept:      "*/*",
 				statusCode:          code,
 				responseBody:        testRespBodies["TestAPIErrorOnBadRequestAndUnauthorized"],
 			})
@@ -132,7 +132,7 @@ func TestValidationErrorOnUnprocessableEntity(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodPost,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusUnprocessableEntity,
 		responseBody:        testRespBodies["TestValidationErrorOnUnprocessableEntity"],
 	})
@@ -152,7 +152,7 @@ func TestErrorOnUnexpectedStatusCode(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodPost,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusInternalServerError,
 	})
 	defer server.Close()
@@ -236,7 +236,7 @@ func TestGetModels(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        respBody,
 	})
@@ -263,7 +263,7 @@ func TestGetVoices(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        respBody,
 	})
@@ -290,7 +290,7 @@ func TestGetDefaultVoiceSettings(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        respBody,
 	})
@@ -314,7 +314,7 @@ func TestGetVoiceSettings(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        respBody,
 	})
@@ -354,7 +354,7 @@ func TestGetVoice(t *testing.T) {
 			server := testServer(t, testServerConfig{
 				expectedMethod:      http.MethodGet,
 				expectedContentType: contentTypeJSON,
-				expectedAccept:      "application/json",
+				expectedAccept:      "*/*",
 				statusCode:          http.StatusOK,
 				responseBody:        []byte(respBody),
 			})
@@ -379,7 +379,7 @@ func TestDeleteVoice(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodDelete,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 	})
 	defer server.Close()
@@ -394,7 +394,7 @@ func TestEditVoiceSettings(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodPost,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 	})
 	defer server.Close()
@@ -436,7 +436,7 @@ func TestAddVoice(t *testing.T) {
 			server := testServer(t, testServerConfig{
 				expectedMethod:      http.MethodPost,
 				expectedContentType: contentMultipart,
-				expectedAccept:      "application/json",
+				expectedAccept:      "*/*",
 				statusCode:          http.StatusOK,
 				responseBody:        tc.expRespBody,
 			})
@@ -466,7 +466,7 @@ func TestEditVoice(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodPost,
 		expectedContentType: contentMultipart,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 	})
 	defer server.Close()
@@ -481,7 +481,7 @@ func TestDeleteSample(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodDelete,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 	})
 	defer server.Close()
@@ -498,7 +498,7 @@ func TestGetSampleAudio(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        []byte(expRespBody),
 	})
@@ -546,7 +546,7 @@ func TestGetHistory(t *testing.T) {
 				keyOptional:         false,
 				expectedMethod:      "GET",
 				expectedContentType: "application/json",
-				expectedAccept:      "application/json",
+				expectedAccept:      "*/*",
 				expectedQueryStr:    tc.expQueryString,
 				statusCode:          http.StatusOK,
 				responseBody:        tc.respBody,
@@ -601,7 +601,7 @@ func TestGetHistoryItem(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        respBody,
 	})
@@ -624,7 +624,7 @@ func TestDeleteHistoryItem(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodDelete,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 	})
 	defer server.Close()
@@ -640,7 +640,7 @@ func TestGetHistoryItemAudio(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        []byte(expRespBody),
 	})
@@ -682,7 +682,7 @@ func TestGetSubscription(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        respBody,
 	})
@@ -706,7 +706,7 @@ func TestGetUser(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodGet,
 		expectedContentType: contentTypeJSON,
-		expectedAccept:      "application/json",
+		expectedAccept:      "*/*",
 		statusCode:          http.StatusOK,
 		responseBody:        respBody,
 	})
