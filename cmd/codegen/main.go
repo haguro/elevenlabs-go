@@ -28,6 +28,7 @@ package elevenlabs
 
 import "io"
 {{range .Functions}}
+// {{.FuncIdent}} calls the {{.FuncIdent}} method on the default client.
 func {{.FuncIdent}}{{.FuncParams}}{{.FuncResults}} {
 	{{if .FuncResults}}return {{end}}{{.MethodReceiver}}.{{.FuncIdent}}{{.FuncArgs}}
 }
