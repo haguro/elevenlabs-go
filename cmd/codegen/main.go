@@ -25,6 +25,8 @@ const (
 // Run 'go generate' after adding new methods with a '{{.ReceiverType}}' pointer receiver.
 
 package elevenlabs
+
+import "io"
 {{range .Functions}}
 func {{.FuncIdent}}{{.FuncParams}}{{.FuncResults}} {
 	{{if .FuncResults}}return {{end}}{{.MethodReceiver}}.{{.FuncIdent}}{{.FuncArgs}}
@@ -190,6 +192,8 @@ func exprToString(expr ast.Expr) string {
 		return fmt.Sprintf("*%s", exprToString(fieldType.X))
 	case *ast.FuncType:
 		return fmt.Sprintf("func%s%s", genTypedParams(fieldType.Params), genFuncReturnTypes(fieldType.Results))
+	case *ast.SelectorExpr:
+		return fmt.Sprintf("%s.%s", fieldType.X, fieldType.Sel)
 	}
 	return fmt.Sprintf("%s", expr)
 }

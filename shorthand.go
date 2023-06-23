@@ -3,8 +3,14 @@
 
 package elevenlabs
 
+import "io"
+
 func TextToSpeech(voiceID string, ttsReq TextToSpeechRequest, queries ...QueryFunc) ([]byte, error) {
 	return getDefaultClient().TextToSpeech(voiceID, ttsReq, queries...)
+}
+
+func TextToSpeechStream(streamWriter io.Writer, voiceID string, ttsReq TextToSpeechRequest, queries ...QueryFunc) error {
+	return getDefaultClient().TextToSpeechStream(streamWriter, voiceID, ttsReq, queries...)
 }
 
 func GetModels() ([]Model, error) {

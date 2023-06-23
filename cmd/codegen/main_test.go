@@ -129,6 +129,13 @@ func TestGenFuncFromMethod(t *testing.T) {
 			expArgsStr:   "()",
 			expResStr:    "",
 		},
+		{
+			name:         "9. Interface (and types) galore",
+			inSrc:        `func (b *Client) SampleMethod(w io.Writer, f *os.File) (r io.Reader,rw http.ResponseWriter) {}`,
+			expParamsStr: "(w io.Writer, f *os.File)",
+			expArgsStr:   "(w, f)",
+			expResStr:    " (io.Reader, http.ResponseWriter)",
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
