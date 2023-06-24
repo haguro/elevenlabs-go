@@ -5,10 +5,14 @@ import (
 	"strings"
 )
 
+// APIError represents an error response from the API.
+//
+// At this stage, any error that is not a ValidationError is returned in this format.
 type APIError struct {
 	Detail APIErrorDetail `json:"detail"`
 }
 
+// APIErrorDetail contains detailed information about an APIError.
 type APIErrorDetail struct {
 	Status         string `json:"status"`
 	Message        string `json:"message"`
@@ -19,6 +23,7 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("api error - %s", e.Detail.Message)
 }
 
+// ValidationError represents a request validation error response from the API.
 type ValidationError struct {
 	Detail *[]ValidationErrorDetailItem `json:"detail"`
 }
