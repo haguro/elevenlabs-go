@@ -2,6 +2,7 @@ package elevenlabs_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -83,4 +84,37 @@ immediately, even if the buffer isn't full.`
 	}
 
 	log.Print("All done.")
+}
+
+func ExampleClient_GetHistory() {
+	// Define a helper function to print history items
+	printHistory := func(r elevenlabs.GetHistoryResponse, p int) {
+		fmt.Printf("--Page %d--\n", p)
+		for i, h := range r.History {
+			t := time.Unix(int64(h.DateUnix), 0)
+			fmt.Printf("%d. %s - %s: %d bytes\n", p+i, t.Format("2006-01-02 15:04:05"), h.HistoryItemId, len(h.Text))
+		}
+	}
+	// Create a new client
+	client := elevenlabs.NewClient(context.Background(), "your-api-key", 30*time.Second)
+
+	// Get and print the first page (5 items).
+	page := 1
+	historyResp, nextPage, err := client.GetHistory(elevenlabs.PageSize(5))
+	if err != nil {
+		log.Fatal(err)
+	}
+	printHistory(historyResp, page)
+
+	// Get all other pages
+	for nextPage != nil {
+		page++
+		// Retrieve the next page. The page size from the original call is retained but
+		// can be overwritten by passing a call to PageSize with the new size.
+		historyResp, nextPage, err = nextPage()
+		if err != nil {
+			log.Fatal(err)
+		}
+		printHistory(historyResp, page)
+	}
 }

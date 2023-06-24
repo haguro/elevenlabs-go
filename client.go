@@ -431,7 +431,7 @@ func (c *Client) GetHistory(queries ...QueryFunc) (GetHistoryResponse, NextHisto
 	}
 
 	nextPageFunc := func(qf ...QueryFunc) (GetHistoryResponse, NextHistoryPageFunc, error) {
-		qf = append(qf, StartAfter(historyResp.LastHistoryItemId))
+		qf = append(queries, append(qf, StartAfter(historyResp.LastHistoryItemId))...)
 		return c.GetHistory(qf...)
 	}
 	return historyResp, nextPageFunc, nil
