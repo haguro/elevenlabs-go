@@ -35,8 +35,8 @@ type QueryFunc func(*url.Values)
 //
 // This library also includes a default client instance that can be used when it's more convenient or when
 // only a single instance of Client will ever be used by the program. The default client's API key and timeout
-// can be modified with SetAPIKey and SetTimeout respectively, but its base context is fixed and is set
-// to context.Background().
+// (which defaults to 30 seconds) can be modified with SetAPIKey and SetTimeout respectively, but the parent
+// context is fixed and is set to context.Background().
 type Client struct {
 	baseURL string
 	apiKey  string
@@ -72,7 +72,7 @@ func SetTimeout(timeout time.Duration) {
 //
 // It should be used to instantiate a new client with a specific API key, request timeout, and context.
 //
-// It takes a context.Context argument which act as the base context to be used for requests made by this
+// It takes a context.Context argument which act as the parent context to be used for requests made by this
 // client, a string argument that represents the API key to be used for authenticated requests and
 // a time.Duration argument that represents the timeout duration for the client's requests.
 //
