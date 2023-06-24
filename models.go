@@ -116,18 +116,18 @@ type GetHistoryResponse struct {
 }
 
 type HistoryItem struct {
-	CharacterCountChangeFrom int                    `json:"character_count_change_from"`
-	CharacterCountChangeTo   int                    `json:"character_count_change_to"`
-	ContentType              string                 `json:"content_type"`
-	DateUnix                 int                    `json:"date_unix"`
-	Feedback                 Feedback               `json:"feedback"`
-	HistoryItemId            string                 `json:"history_item_id"`
-	RequestId                string                 `json:"request_id"`
-	Settings                 map[string]interface{} `json:"settings"`
-	State                    string                 `json:"state"`
-	Text                     string                 `json:"text"`
-	VoiceId                  string                 `json:"voice_id"`
-	VoiceName                string                 `json:"voice_name"`
+	CharacterCountChangeFrom int           `json:"character_count_change_from"`
+	CharacterCountChangeTo   int           `json:"character_count_change_to"`
+	ContentType              string        `json:"content_type"`
+	DateUnix                 int           `json:"date_unix"`
+	Feedback                 Feedback      `json:"feedback"`
+	HistoryItemId            string        `json:"history_item_id"`
+	RequestId                string        `json:"request_id"`
+	Settings                 VoiceSettings `json:"settings"`
+	State                    string        `json:"state"`
+	Text                     string        `json:"text"`
+	VoiceId                  string        `json:"voice_id"`
+	VoiceName                string        `json:"voice_name"`
 }
 
 type Feedback struct {
