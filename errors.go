@@ -42,5 +42,8 @@ func (i *ValidationErrorDetailLocItem) UnmarshalJSON(b []byte) error {
 }
 
 func (e *ValidationError) Error() string {
-	return fmt.Sprintf("validation error: %s", (*e.Detail)[0].Msg)
+	if (*e).Detail != nil && len(*e.Detail) > 0 {
+		return fmt.Sprintf("validation error - %s", (*e.Detail)[0].Msg)
+	}
+	return "validation error"
 }
