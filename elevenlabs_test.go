@@ -148,6 +148,48 @@ func TestValidationErrorOnUnprocessableEntity(t *testing.T) {
 	}
 }
 
+func TestErrorMethods(t *testing.T) {
+	testCases := []struct {
+		name      string
+		err       error
+		expSubStr string
+	}{
+		{
+			name: "API Error",
+			err: &elevenlabs.APIError{
+				Detail: elevenlabs.APIErrorDetail{
+					Message: "message",
+				},
+			},
+			expSubStr: "api error - message",
+		},
+		{
+			name:      "Validation Error - No Details",
+			err:       &elevenlabs.ValidationError{},
+			expSubStr: "validation error",
+		},
+		{
+			name: "Validation Error - With Details",
+			err: &elevenlabs.ValidationError{
+				Detail: &[]elevenlabs.ValidationErrorDetailItem{
+					{
+						Msg: "message",
+					},
+				},
+			},
+			expSubStr: "validation error - message",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			str := tc.err.Error()
+			if !strings.Contains(str, tc.expSubStr) {
+				t.Errorf("Expected error string %q to contain %q", str, tc.expSubStr)
+			}
+		})
+	}
+}
+
 func TestErrorOnUnexpectedStatusCode(t *testing.T) {
 	server := testServer(t, testServerConfig{
 		expectedMethod:      http.MethodPost,
