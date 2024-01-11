@@ -5,7 +5,7 @@
 ![Tests](https://github.com/haguro/elevenlabs-go/actions/workflows/tests.yml/badge.svg?branch=main&event=push)
 [![codecov](https://codecov.io/gh/haguro/elevenlabs-go/branch/main/graph/badge.svg?token=UM33DSSTAG)](https://codecov.io/gh/haguro/elevenlabs-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/haguro/elevenlabs-go)](https://goreportcard.com/report/github.com/haguro/elevenlabs-go)
-[![Go Reference](https://pkg.go.dev/badge/github.com/haguro/elevenlabs-go.svg)](https://pkg.go.dev/github.com/haguro/elevenlabs-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/haguro/elevenlabs-go.svg)](https://pkg.go.dev/github.com/haguro/elevenlabs-go#section-documentation)
 
 This is a Go client library for the [ElevenLabs](https://elevenlabs.io/) voice cloning and speech synthesis platform. It provides a basic interface for Go programs to interact with the ElevenLabs [API](https://docs.elevenlabs.io/api-reference).
 
@@ -17,9 +17,9 @@ go get github.com/haguro/elevenlabs-go
 
 ## Example Usage
 
-Make sure to replace `"your-api-key"` in all examples with your actual API key and `"voiceID"` with the ID of the voice model you want to use. Refer to the official Elevenlabs [API documentation](https://docs.elevenlabs.io/api-reference/quick-start/introduction) for further details.
+Make sure to replace `"your-api-key"` in all examples with your actual API key. Refer to the official Elevenlabs [API documentation](https://docs.elevenlabs.io/api-reference/quick-start/introduction) for further details.
 
-Full documentation is available [here](https://pkg.go.dev/github.com/haguro/elevenlabs-go).
+Full documentation of this library is available [here](https://pkg.go.dev/github.com/haguro/elevenlabs-go).
 
 ### Using a New Client Instance
 
@@ -183,7 +183,7 @@ Contributions are welcome! If you have any ideas, improvements, or bug fixes, pl
 
 ## Looking for a Python library?
 
-The Elevenlabs's official [Python library](https://github.com/elevenlabs/elevenlabs-python) is excellent and fellow Pythonistas are encourage to use it (and also to give Go, a [go](https://gobyexample.com/) 😉🩵)!
+The Elevenlabs's official [Python library](https://github.com/elevenlabs/elevenlabs-python) is excellent and fellow Pythonistas are encouraged to use it (and also to give Go, a [go](https://gobyexample.com/) 😉🩵)!
 
 ## Disclaimer
 
