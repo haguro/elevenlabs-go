@@ -161,6 +161,22 @@ func WithSettings() QueryFunc {
 	}
 }
 
+// PageSize is a QueryFunc that sets the http query 'page_size' to a given value. It is meant to be used
+// with GetHistory to set the number of elements returned in the GetHistoryResponse.History slice.
+func PageSize(n int) QueryFunc {
+	return func(q *url.Values) {
+		q.Add("page_size", fmt.Sprint(n))
+	}
+}
+
+// StartAfter is a QueryFunc that sets the http query 'start_after_history_item_id' to a given item ID.
+// It is meant to be used with GetHistory to specify which history item to start with when retrieving history.
+func StartAfter(id string) QueryFunc {
+	return func(q *url.Values) {
+		q.Add("start_after_history_item_id", id)
+	}
+}
+
 // TextToSpeech converts and returns a given text to speech audio using a certain voice.
 //
 // It takes a string argument that represents the ID of the voice to be used for the text to speech conversion,
@@ -308,7 +324,7 @@ func (c *Client) DeleteVoice(voiceId string) error {
 
 // EditVoiceSettings updates the settings for a specific voice.
 //
-// It takes a string argument that represents the ID of the voice for which the settings to be
+// It takes a string argument that represents the ID of the voice to which the settings to be
 // updated belong, and a VoiceSettings argument that contains the new settings to be applied.
 //
 // It returns nil if successful or an error otherwise.
@@ -381,30 +397,14 @@ func (c *Client) GetSampleAudio(voiceId, sampleId string) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-// PageSize is a QueryFunc that sets the http query 'page_size' to a given value. It is meant to be used
-// with GetHistory to set the number of elements returned in the GetHistoryResponse.History slice.
-func PageSize(n int) QueryFunc {
-	return func(q *url.Values) {
-		q.Add("page_size", fmt.Sprint(n))
-	}
-}
-
-// StartAfter is a QueryFunc that sets the http query 'start_after_history_item_id' to a given item ID.
-// It is meant to be used with GetHistory to
-func StartAfter(id string) QueryFunc {
-	return func(q *url.Values) {
-		q.Add("start_after_history_item_id", id)
-	}
-}
-
 // NextHistoryPageFunc represent functions that can be used to access subsequent history pages. It is
 // returned by the GetHistory client method.
 //
 // A NextHistoryPageFunc function wraps a call to GetHistory which will subsequently return another
-// NextHistoryPageFunc until all history pages are retrieved in which case nil will be returned in its pace.
+// NextHistoryPageFunc until all history pages are retrieved in which case nil will be returned in its place.
 //
 // As such, a "while"-style for loop or recursive calls to the returned NextHistoryPageFunc can be employed
-// to retrieve all history if needed.
+// to retrieve all history in a paginated way if needed.
 type NextHistoryPageFunc func(...QueryFunc) (GetHistoryResponse, NextHistoryPageFunc, error)
 
 // GetHistory retrieves the history of all created audio and their metadata
@@ -431,6 +431,7 @@ func (c *Client) GetHistory(queries ...QueryFunc) (GetHistoryResponse, NextHisto
 	}
 
 	nextPageFunc := func(qf ...QueryFunc) (GetHistoryResponse, NextHistoryPageFunc, error) {
+		//TODO copy to new slice to avoid unexpected issues if query changes after few calls.
 		qf = append(queries, append(qf, StartAfter(historyResp.LastHistoryItemId))...)
 		return c.GetHistory(qf...)
 	}
