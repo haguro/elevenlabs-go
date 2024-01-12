@@ -57,6 +57,8 @@ type Voice struct {
 type VoiceSettings struct {
 	SimilarityBoost float32 `json:"similarity_boost"`
 	Stability       float32 `json:"stability"`
+	Style           float32 `json:"style,omitempty"`
+	SpeakerBoost    bool    `json:"use_speaker_boost,omitempty"`
 }
 
 type VoiceSharing struct {

@@ -465,7 +465,7 @@ func TestEditVoiceSettings(t *testing.T) {
 	})
 	defer server.Close()
 	client := elevenlabs.NewMockClient(context.Background(), server.URL, mockAPIKey, mockTimeout)
-	err := client.EditVoiceSettings("TestVoiceID", elevenlabs.VoiceSettings{Stability: 0.2, SimilarityBoost: 0.7})
+	err := client.EditVoiceSettings("TestVoiceID", elevenlabs.VoiceSettings{Stability: 0.2, SimilarityBoost: 0.7, Style: 0.3, SpeakerBoost: false})
 	if err != nil {
 		t.Errorf("Expected no errors, got error: %q", err)
 	}

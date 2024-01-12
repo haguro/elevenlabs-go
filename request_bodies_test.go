@@ -110,12 +110,16 @@ var testRespBodies = map[string][]byte{
 
 	"TestGetDefaultVoiceSettings": []byte(`{
   "stability": 0.1,
-  "similarity_boost": 0.2
+  "similarity_boost": 0.2,
+  "style": 0,
+  "use_speaker_boost": true
 }`),
 
 	"TestGetVoiceSettings": []byte(`{
   "stability": 0.7,
-  "similarity_boost": 0.9
+  "similarity_boost": 0.9,
+  "style": 0.1,
+  "use_speaker_boost": false
 }`),
 
 	"TestGetVoice": []byte(`{
@@ -173,7 +177,9 @@ var testRespBodies = map[string][]byte{
   ],
   "settings": {
     "stability": 0.3,
-    "similarity_boost": 0.7
+    "similarity_boost": 0.7,
+    "style": 0.4,
+    "use_speaker_boost": false
   },
   "sharing": {
     "status": "string",
