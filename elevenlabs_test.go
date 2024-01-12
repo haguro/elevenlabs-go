@@ -242,6 +242,30 @@ func TestTextToSpeech(t *testing.T) {
 			expResponseBody:    testRespBodies["TestTextToSpeech"],
 			expectedRespStatus: http.StatusOK,
 		},
+		{
+			name:           "With API key and output format query",
+			excludeAPIKey:  false,
+			queries:        []elevenlabs.QueryFunc{elevenlabs.OutputFormat("ulaw_8000")},
+			expQueryString: "output_format=ulaw_8000",
+			testRequestBody: elevenlabs.TextToSpeechRequest{
+				ModelID: "model1",
+				Text:    "Test text",
+			},
+			expResponseBody:    testRespBodies["TestTextToSpeech"],
+			expectedRespStatus: http.StatusOK,
+		},
+		{
+			name:           "With API key and latency optimizations and output format queries",
+			excludeAPIKey:  false,
+			queries:        []elevenlabs.QueryFunc{elevenlabs.LatencyOptimizations(3), elevenlabs.OutputFormat("mp3_44100_32")},
+			expQueryString: "optimize_streaming_latency=3&output_format=mp3_44100_32",
+			testRequestBody: elevenlabs.TextToSpeechRequest{
+				ModelID: "model1",
+				Text:    "Test text",
+			},
+			expResponseBody:    testRespBodies["TestTextToSpeech"],
+			expectedRespStatus: http.StatusOK,
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

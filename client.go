@@ -137,7 +137,7 @@ func (c *Client) doRequest(ctx context.Context, RespBodyWriter io.Writer, method
 	return err
 }
 
-// LatencyOptimizations is a QueryFunc that sets the http query 'optimize_streaming_latency' to
+// LatencyOptimizations returns a QueryFunc that sets the http query 'optimize_streaming_latency' to
 // a certain value. It is meant to be used used with TextToSpeech and TextToSpeechStream to turn
 // on latency optimization.
 //
@@ -153,7 +153,29 @@ func LatencyOptimizations(value int) QueryFunc {
 	}
 }
 
-// WithSettings is a QueryFunc that sets the http query 'with_settings' to true. It is meant to be used with
+// OutputFormat returns a QueryFunc that sets the http query 'output_format' to a certain value.
+// It is meant to be used used with TextToSpeech and TextToSpeechStream to change the output format to
+// a value other than the default (mp3_44100_128).
+//
+// Possible values:
+// mp3_22050_32 - mp3 with 22.05kHz sample rate at 32kbps.
+// mp3_44100_32 - mp3 with 44.1kHz sample rate at 32kbps.
+// mp3_44100_64 - mp3 with 44.1kHz sample rate at 64kbps.
+// mp3_44100_96 - mp3 with 44.1kHz sample rate at 96kbps.
+// mp3_44100_128 - mp3 with 44.1kHz sample rate at 128kbps (default)
+// mp3_44100_192 - mp3 with 44.1kHz sample rate at 192kbps (Requires subscription of Creator tier or above).
+// pcm_16000 - PCM (S16LE) with 16kHz sample rate.
+// pcm_22050 - PCM (S16LE) with 22.05kHz sample rate.
+// pcm_24000 - PCM (S16LE) with 24kHz sample rate.
+// pcm_44100 - PCM (S16LE) with 44.1kHz sample rate (Requires subscription of Independent Publisher tier or above).
+// ulaw_8000 - μ-law with 8kHz sample rate. Note that this format is commonly used for Twilio audio inputs.
+func OutputFormat(value string) QueryFunc {
+	return func(q *url.Values) {
+		q.Add("output_format", value)
+	}
+}
+
+// WithSettings returns a QueryFunc that sets the http query 'with_settings' to true. It is meant to be used with
 // GetVoice to include Voice setting info with the Voice metadata.
 func WithSettings() QueryFunc {
 	return func(q *url.Values) {
@@ -161,7 +183,7 @@ func WithSettings() QueryFunc {
 	}
 }
 
-// PageSize is a QueryFunc that sets the http query 'page_size' to a given value. It is meant to be used
+// PageSize returns a QueryFunc that sets the http query 'page_size' to a given value. It is meant to be used
 // with GetHistory to set the number of elements returned in the GetHistoryResponse.History slice.
 func PageSize(n int) QueryFunc {
 	return func(q *url.Values) {
@@ -169,7 +191,7 @@ func PageSize(n int) QueryFunc {
 	}
 }
 
-// StartAfter is a QueryFunc that sets the http query 'start_after_history_item_id' to a given item ID.
+// StartAfter returns a QueryFunc that sets the http query 'start_after_history_item_id' to a given item ID.
 // It is meant to be used with GetHistory to specify which history item to start with when retrieving history.
 func StartAfter(id string) QueryFunc {
 	return func(q *url.Values) {
@@ -181,8 +203,8 @@ func StartAfter(id string) QueryFunc {
 //
 // It takes a string argument that represents the ID of the voice to be used for the text to speech conversion,
 // a TextToSpeechRequest argument that contain the text to be used to generate the audio alongside other settings
-// and an optional list of QueryFunc 'queries' to modify the request. The QueryFunc relevant for this function
-// is LatencyOptimizations.
+// and an optional list of QueryFunc 'queries' to modify the request. The QueryFunc functions relevant for this method
+// are LatencyOptimizations and OutputFormat
 //
 // It returns a byte slice that contains mpeg encoded audio data in case of success, or an error.
 func (c *Client) TextToSpeech(voiceID string, ttsReq TextToSpeechRequest, queries ...QueryFunc) ([]byte, error) {
@@ -203,7 +225,7 @@ func (c *Client) TextToSpeech(voiceID string, ttsReq TextToSpeechRequest, querie
 // It takes an io.Writer argument to which the streamed audio will be copied, a string argument that represents the
 // ID of the voice to be used for the text to speech conversion, a TextToSpeechRequest argument that contain the text
 // to be used to generate the audio alongside other settings and an optional list of QueryFunc 'queries' to modify the
-// request. The QueryFunc relevant for this function is LatencyOptimizations.
+// request. The QueryFunc functions relevant for this method are LatencyOptimizations and OutputFormat.
 //
 // It is important to set the timeout of the client to a duration large enough to maintain the desired streaming period.
 //
@@ -217,7 +239,7 @@ func (c *Client) TextToSpeechStream(streamWriter io.Writer, voiceID string, ttsR
 	return c.doRequest(c.ctx, streamWriter, http.MethodPost, fmt.Sprintf("%s/text-to-speech/%s/stream", c.baseURL, voiceID), bytes.NewBuffer(reqBody), contentTypeJSON, queries...)
 }
 
-// GetModels retrieves the list all available models.
+// GetModels retrieves the list of all available models.
 //
 // It returns a slice of Model objects or an error.
 func (c *Client) GetModels() ([]Model, error) {
