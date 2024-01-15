@@ -238,6 +238,8 @@ var testRespBodies = map[string][]byte{
   "allowed_to_extend_character_limit": true,
   "next_character_count_reset_unix": 0,
   "voice_limit": 0,
+  "max_voice_add_edits": 1000,
+  "voice_add_edit_counter": 15,
   "professional_voice_limit": 0,
   "can_extend_voice_limit": true,
   "can_use_instant_voice_cloning": true,
@@ -259,6 +261,8 @@ var testRespBodies = map[string][]byte{
     "allowed_to_extend_character_limit": true,
     "next_character_count_reset_unix": 0,
     "voice_limit": 0,
+    "max_voice_add_edits": 1000,
+    "voice_add_edit_counter": 15,
     "professional_voice_limit": 0,
     "can_extend_voice_limit": true,
     "can_use_instant_voice_cloning": true,
@@ -266,7 +270,9 @@ var testRespBodies = map[string][]byte{
     "currency": "usd",
     "status": "trialing"
   },
+  "first_name": "Bob",
   "is_new_user": true,
+  "is_onboarding_complete": false,
   "xi_api_key": "string",
   "can_use_delayed_payment_methods": true
 }`),
