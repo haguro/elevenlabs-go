@@ -156,10 +156,12 @@ type Subscription struct {
 	CharacterLimit                 int     `json:"character_limit"`
 	Currency                       string  `json:"currency"`
 	NextCharacterCountResetUnix    int     `json:"next_character_count_reset_unix"`
+	VoiceLimit                     int     `json:"voice_limit"`
 	ProfessionalVoiceLimit         int     `json:"professional_voice_limit"`
 	Status                         string  `json:"status"`
 	Tier                           string  `json:"tier"`
-	VoiceLimit                     int     `json:"voice_limit"`
+	MaxVoiceAddEdits               int     `json:"max_voice_add_edits"`
+	VoiceAddEditCounter            int     `json:"voice_add_edit_counter"`
 	HasOpenInvoices                bool    `json:"has_open_invoices"`
 	NextInvoice                    Invoice `json:"next_invoice"`
 	withInvoicingDetails           bool
@@ -172,7 +174,9 @@ type Invoice struct {
 
 type User struct {
 	Subscription                Subscription `json:"subscription"`
+	FirstName                   string       `json:"first_name,omitempty"`
 	IsNewUser                   bool         `json:"is_new_user"`
+	IsOnboardingComplete        bool         `json:"is_onboarding_complete"`
 	XiApiKey                    string       `json:"xi_api_key"`
 	CanUseDelayedPaymentMethods bool         `json:"can_use_delayed_payment_methods"`
 }
