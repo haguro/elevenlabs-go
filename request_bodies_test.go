@@ -205,6 +205,8 @@ var testRespBodies = map[string][]byte{
 	"TestGetHistoryItem": []byte(`{
   "history_item_id": "TestHistoryItemID",
   "request_id": "string",
+  "model_id": "TestModelID",
+  "voice_category": "generated",
   "voice_id": "string",
   "voice_name": "string",
   "text": "string",
@@ -214,6 +216,7 @@ var testRespBodies = map[string][]byte{
   "content_type": "string",
   "state": "created",
   "settings": {},
+  "share_link_id" : "TestLinkID",
   "feedback": {
     "thumbs_up": true,
     "feedback": "string",
