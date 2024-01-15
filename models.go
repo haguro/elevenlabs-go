@@ -124,10 +124,13 @@ type HistoryItem struct {
 	DateUnix                 int           `json:"date_unix"`
 	Feedback                 Feedback      `json:"feedback"`
 	HistoryItemId            string        `json:"history_item_id"`
+	ModelId                  string        `json:"model_id"`
 	RequestId                string        `json:"request_id"`
 	Settings                 VoiceSettings `json:"settings"`
+	ShareLinkId              string        `json:"share_link_id"`
 	State                    string        `json:"state"`
 	Text                     string        `json:"text"`
+	VoiceCategory            string        `json:"voice_category"`
 	VoiceId                  string        `json:"voice_id"`
 	VoiceName                string        `json:"voice_name"`
 }
