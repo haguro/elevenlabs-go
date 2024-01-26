@@ -26,7 +26,13 @@ var testRespBodies = map[string][]byte{
 		"can_be_finetuned": true,
 		"can_do_text_to_speech": true,
 		"can_do_voice_conversion": true,
+    "can_use_speaker_boost": true,
+    "can_use_style": false,
 		"token_cost_factor": 0,
+    "max_characters_request_free_user": 1000,
+    "max_characters_request_subscribed_user": 10000,
+    "requires_alpha_access": false,
+    "serves_pro_voices": true,
 		"description": "TestModelDescription",
 		"languages": [
 			{
@@ -55,6 +61,20 @@ var testRespBodies = map[string][]byte{
       "fine_tuning": {
         "model_id": "string",
         "language": "string",
+        "manual_verification_requested": true,
+        "manual_verification": {
+          "extra_text": "string",
+          "files": [
+            {
+              "file_id": "string",
+              "file_name": "string",
+              "mime_type": "string",
+              "size_bytes": 0,
+              "upload_date_unix": 0
+            }
+          ],
+          "request_time_unix": 0
+        },
         "is_allowed_to_fine_tune": true,
         "fine_tuning_requested": true,
         "finetuning_state": "not_started",
@@ -92,17 +112,41 @@ var testRespBodies = map[string][]byte{
       "available_for_tiers": [
         "string"
       ],
+      "high_quality_base_model_ids": [
+        "string"
+      ],
       "settings": {
         "stability": 0,
         "similarity_boost": 0
       },
       "sharing": {
-        "status": "string",
+        "cloned_by_count": 0,
+        "date_unix": 0,
+        "description": "string",
+        "disable_at_unix": true,
+        "enabled_in_library": false,
+        "financial_reward_enabled": true,
+        "free_users_allowed": true,
+        "labels": {
+          "additionalProp1": "string",
+          "additionalProp2": "string",
+          "additionalProp3": "string"
+        },
+        "liked_by_count": 10,
+        "live_moderation_enabled": false,
+        "name": "string",
+        "notice_period": 2,
         "history_item_sample_id": "string",
         "original_voice_id": "string",
         "public_owner_id": "string",
-        "liked_by_count": 0,
-        "cloned_by_count": 0
+        "rate": 0.8,
+        "review_message": "string",
+        "review_status": "string",
+        "status": "string",
+        "voice_mixing_allowed": false,
+        "whitelisted_emails": [
+          "foo@example.com"
+        ]
       }
     }
   ]
@@ -138,6 +182,20 @@ var testRespBodies = map[string][]byte{
   "fine_tuning": {
     "model_id": "string",
     "language": "string",
+    "manual_verification_requested": true,
+    "manual_verification": {
+      "extra_text": "string",
+      "files": [
+        {
+          "file_id": "string",
+          "file_name": "string",
+          "mime_type": "string",
+          "size_bytes": 0,
+          "upload_date_unix": 0
+        }
+      ],
+      "request_time_unix": 0
+    },
     "is_allowed_to_fine_tune": true,
     "fine_tuning_requested": true,
     "finetuning_state": "not_started",
@@ -175,6 +233,9 @@ var testRespBodies = map[string][]byte{
   "available_for_tiers": [
     "string"
   ],
+  "high_quality_base_model_ids": [
+    "string"
+  ],
   "settings": {
     "stability": 0.3,
     "similarity_boost": 0.7,
@@ -182,12 +243,33 @@ var testRespBodies = map[string][]byte{
     "use_speaker_boost": false
   },
   "sharing": {
-    "status": "string",
+    "cloned_by_count": 0,
+    "date_unix": 0,
+    "description": "string",
+    "disable_at_unix": true,
+    "enabled_in_library": false,
+    "financial_reward_enabled": true,
+    "free_users_allowed": true,
+    "labels": {
+      "additionalProp1": "string",
+      "additionalProp2": "string",
+      "additionalProp3": "string"
+    },
+    "liked_by_count": 10,
+    "live_moderation_enabled": false,
+    "name": "string",
+    "notice_period": 2,
     "history_item_sample_id": "string",
     "original_voice_id": "string",
     "public_owner_id": "string",
-    "liked_by_count": 0,
-    "cloned_by_count": 0
+    "rate": 0.8,
+    "review_message": "string",
+    "review_status": "string",
+    "status": "string",
+    "voice_mixing_allowed": false,
+    "whitelisted_emails": [
+      "foo@example.com"
+    ]
   }
 }`),
 	"TestGetSampleAudio": []byte("testaudiobytes"),
