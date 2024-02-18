@@ -272,8 +272,9 @@ var testRespBodies = map[string][]byte{
     ]
   }
 }`),
-	"TestGetSampleAudio": []byte("testaudiobytes"),
-	"TestTextToSpeech":   []byte("testaudiobytes"),
+	"TestGetSampleAudio":     []byte("testaudiobytes"),
+	"TestTextToSpeech":       []byte("testaudiobytes"),
+	"TestTextToSpeechStream": []byte("testaudiobytes"),
 	"TestGetHistory-NoMore": []byte(`{
   "history":[],
   "last_history_item_id": "",

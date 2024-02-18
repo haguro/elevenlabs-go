@@ -1,6 +1,7 @@
 package elevenlabs_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -289,6 +290,68 @@ func TestTextToSpeech(t *testing.T) {
 			if err != nil {
 				t.Errorf("Expected no errors, got error: %q", err)
 			}
+
+			if string(respBody) != string(tc.expResponseBody) {
+				t.Errorf("Expected response %q, got %q", string(tc.expResponseBody), string(respBody))
+			}
+		})
+	}
+}
+
+func TestTextToSpeechStream(t *testing.T) {
+	testCases := []struct {
+		name               string
+		excludeAPIKey      bool
+		queries            []elevenlabs.QueryFunc
+		expQueryString     string
+		testRequestBody    any
+		expResponseBody    []byte
+		expectedRespStatus int
+	}{
+		{
+			name:          "No API key and no queries",
+			excludeAPIKey: true,
+			testRequestBody: elevenlabs.TextToSpeechRequest{
+				ModelID: "model1",
+				Text:    "Test text",
+			},
+			expResponseBody:    testRespBodies["TestTextToSpeechStream"],
+			expectedRespStatus: http.StatusOK,
+		},
+		{
+			name:          "With API key and no queries",
+			excludeAPIKey: false,
+			testRequestBody: elevenlabs.TextToSpeechRequest{
+				ModelID: "model1",
+				Text:    "Test text",
+			},
+			expResponseBody:    testRespBodies["TestTextToSpeechStream"],
+			expectedRespStatus: http.StatusOK,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			requestAPIKey := mockAPIKey
+			if tc.excludeAPIKey {
+				requestAPIKey = ""
+			}
+			server := testServer(t, testServerConfig{
+				keyOptional:         tc.excludeAPIKey,
+				expectedMethod:      http.MethodPost,
+				expectedContentType: contentTypeJSON,
+				expectedQueryStr:    tc.expQueryString,
+				statusCode:          tc.expectedRespStatus,
+				responseBody:        tc.expResponseBody,
+			})
+			defer server.Close()
+
+			client := elevenlabs.NewMockClient(context.Background(), server.URL, requestAPIKey, mockTimeout)
+			w := bytes.Buffer{}
+			err := client.TextToSpeechStream(&w, "voiceID", tc.testRequestBody.(elevenlabs.TextToSpeechRequest), tc.queries...)
+			if err != nil {
+				t.Errorf("Expected no errors, got error: %q", err)
+			}
+			respBody := w.Bytes()
 
 			if string(respBody) != string(tc.expResponseBody) {
 				t.Errorf("Expected response %q, got %q", string(tc.expResponseBody), string(respBody))
